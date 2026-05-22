@@ -1016,10 +1016,12 @@ async function submitCase() {
 
     const createdCaseId = json.data.case_id;
 
-    clearFormAfterSubmit();
+clearFormAfterSubmit();
 
-    setMessage(`登録完了：${createdCaseId}　続けて登録できます。`, 'success');
+setMessage(`登録完了：${createdCaseId}　続けて登録できます。`, 'success');
 
+scrollToPageTop();
+    
   } catch (error) {
     setMessage(error.message, 'error');
 
@@ -1218,6 +1220,26 @@ async function fetchApiJson(action, options = {}) {
  * clearFormAfterSubmit ここから
  * 登録成功後にフォームを初期状態へ戻す
  * 対象月・案件種別・入力方式は連続登録しやすいように維持する
+ ****************************************************/
+
+  /****************************************************
+ * scrollToPageTop ここから
+ * 登録成功後に画面上部へ戻す
+ ****************************************************/
+function scrollToPageTop() {
+  setTimeout(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, 100);
+}
+/****************************************************
+ * scrollToPageTop ここまで
  ****************************************************/
 function clearFormAfterSubmit() {
   // 対象月 targetMonth は維持
