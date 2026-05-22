@@ -38,7 +38,7 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 16px;
     }
 
     .created-at {
@@ -50,36 +50,50 @@
 
     .case-main-row {
       display: grid;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: start;
     }
 
-    @media (min-width: 720px) {
+    @media (min-width: 860px) {
       .case-main-row {
-        grid-template-columns: 1fr 1.5fr 120px;
-        align-items: center;
+        grid-template-columns: 1fr 1.7fr 170px;
       }
     }
 
-    .case-main-title {
-      font-size: 20px;
+    .target-month-title {
+      font-size: 24px;
       font-weight: bold;
       color: #333;
       line-height: 1.35;
+      word-break: keep-all;
     }
 
-    .target-month-title {
-      font-size: 20px;
+    .case-main-title {
+      font-size: 24px;
       font-weight: bold;
       color: #333;
       line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .side-action-box {
+      display: grid;
+      gap: 10px;
+      justify-items: start;
+    }
+
+    @media (min-width: 860px) {
+      .side-action-box {
+        justify-items: stretch;
+      }
     }
 
     .required-people-main {
-      font-size: 20px;
+      font-size: 28px;
       font-weight: bold;
       color: #2e7d32;
-      line-height: 1.35;
+      line-height: 1.2;
       white-space: nowrap;
     }
 
@@ -87,7 +101,24 @@
       font-size: 12px;
       color: #666;
       display: block;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
+    }
+
+    .detail-link {
+      display: inline-block;
+      min-width: 120px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      background: #4caf50;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .detail-link:hover {
+      opacity: .88;
     }
 
     .overview-meta {
@@ -96,7 +127,7 @@
       font-size: 14px;
       color: #555;
       line-height: 1.6;
-      margin-top: 12px;
+      margin-top: 10px;
     }
 
     @media (min-width: 720px) {
@@ -128,9 +159,13 @@
       word-break: break-word;
     }
 
-    .card-actions {
-      justify-content: space-between;
-      align-items: end;
+    .case-bottom-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #edf0f3;
     }
 
     .case-id-small {
@@ -138,32 +173,42 @@
       color: #888;
       font-weight: bold;
       text-align: right;
-      margin-left: auto;
       word-break: break-all;
     }
 
-    .detail-link {
-      min-width: 120px;
-    }
-
-    @media (max-width: 480px) {
+    @media (max-width: 859px) {
       .case-main-row {
-        gap: 6px;
+        grid-template-columns: 1fr;
       }
 
       .target-month-title,
-      .case-main-title,
-      .required-people-main {
-        font-size: 18px;
+      .case-main-title {
+        font-size: 22px;
       }
 
-      .card-actions {
-        flex-direction: column;
+      .required-people-main {
+        font-size: 24px;
+      }
+
+      .side-action-box {
+        grid-template-columns: 1fr auto;
+        align-items: end;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .target-month-title,
+      .case-main-title {
+        font-size: 20px;
+      }
+
+      .side-action-box {
+        grid-template-columns: 1fr;
         align-items: stretch;
       }
 
-      .case-id-small {
-        text-align: right;
+      .detail-link {
+        width: 100%;
       }
     }
   </style>
@@ -378,10 +423,17 @@
 
         <div class="case-main-row">
           <div class="target-month-title">${escapeHtml(formatTargetMonth(item.target_month))}</div>
-          <div class="case-main-title">${escapeHtml(caseTypeName)} / ${escapeHtml(item.store_name || '-')}</div>
-          <div class="required-people-main">
-            <span>必要人数</span>
-            ${escapeHtml(formatRequiredPeople(item.required_people))}
+
+          <div class="case-main-title">
+            ${escapeHtml(caseTypeName)} / ${escapeHtml(item.store_name || '-')}
+          </div>
+
+          <div class="side-action-box">
+            <div class="required-people-main">
+              <span>必要人数</span>
+              ${escapeHtml(formatRequiredPeople(item.required_people))}
+            </div>
+            <a class="detail-link" href="${detailUrl}">詳細を見る</a>
           </div>
         </div>
 
@@ -390,8 +442,7 @@
           ${renderWorkLocationOverview(item)}
         </div>
 
-        <div class="card-actions">
-          <a class="detail-link" href="${detailUrl}">詳細を見る</a>
+        <div class="case-bottom-row">
           <div class="case-id-small">${escapeHtml(item.case_id || '-')}</div>
         </div>
       `;
