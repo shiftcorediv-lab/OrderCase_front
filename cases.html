@@ -190,32 +190,46 @@
       box-shadow: 0 4px 14px rgba(0,0,0,0.06);
     }
 
-    .top-links {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-    }
+    .top-nav {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
 
-    .top-links a {
-      color: #cfd3d7;
-      font-size: 13px;
-      text-decoration: none;
-    }
+.nav-link {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #cfd3d7;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid rgba(255,255,255,0.25);
+}
 
-    .top-links a:hover {
-      text-decoration: underline;
-    }
+.nav-link.active {
+  background: white;
+  color: #202124;
+}
+
+.nav-link:hover {
+  text-decoration: none;
+  background: rgba(255,255,255,0.14);
+}
   </style>
 </head>
 
 <body>
   <header>
-    <h1>OrderCase</h1>
-    <p>案件一覧</p>
-    <div class="top-links">
-      <a href="./index.html">案件登録へ</a>
-    </div>
-  </header>
+  <h1>OrderCase</h1>
+  <p>案件一覧</p>
+
+  <nav class="top-nav">
+    <a class="nav-link" href="./index.html">案件登録</a>
+    <a class="nav-link active" href="./cases.html">案件一覧</a>
+  </nav>
+</header>
 
   <main>
     <div class="toolbar">
