@@ -28,8 +28,127 @@
       gap: 12px;
     }
 
+    .case-card {
+      padding: 18px;
+      position: relative;
+    }
+
+    .case-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .created-at {
+      font-size: 12px;
+      color: #777;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
+    .case-main-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .case-main-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      line-height: 1.35;
+    }
+
+    .target-month-badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f0fff4;
+      border: 1px solid #b7ebc6;
+      color: #2e7d32;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .overview-meta {
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+
+    @media (min-width: 720px) {
+      .overview-meta {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .overview-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .overview-item.important {
+      background: #f0fff4;
+      border-color: #b7ebc6;
+    }
+
+    .overview-label {
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      color: #666;
+      margin-bottom: 3px;
+    }
+
+    .overview-value {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+      word-break: break-word;
+    }
+
     .card-actions {
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: end;
+    }
+
+    .case-id-small {
+      font-size: 11px;
+      color: #888;
+      font-weight: bold;
+      text-align: right;
+      margin-left: auto;
+      word-break: break-all;
+    }
+
+    .detail-link {
+      min-width: 120px;
+    }
+
+    @media (max-width: 480px) {
+      .case-main-title {
+        font-size: 18px;
+      }
+
+      .card-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .case-id-small {
+        text-align: right;
+      }
     }
   </style>
 </head>
@@ -225,6 +344,7 @@
 
     /****************************************************
      * createCaseCard ここから
+     * 一覧カードは概要だけ表示する
      ****************************************************/
     function createCaseCard(item) {
       const card = document.createElement('article');
@@ -232,40 +352,29 @@
 
       const caseTypeName = getCaseTypeName(item.case_type, state.caseTypes);
       const statusName = getStatusName(item.status);
-      const scheduleText = getScheduleText(item);
       const detailUrl = `./case.html?case_id=${encodeURIComponent(item.case_id)}`;
 
+      const isRetailStore = item.case_type === 'retail_store';
+
       card.innerHTML = `
-        <div class="case-head">
-          <div>
-            <div class="case-id">${escapeHtml(item.case_id)}</div>
-            <div class="case-title">${escapeHtml(caseTypeName)} / ${escapeHtml(item.store_name || '-')}</div>
-          </div>
+        <div class="case-top-row">
+          <div class="created-at">${escapeHtml(formatCreatedAt(item.created_at))}</div>
           <div class="status ${escapeHtml(item.status || '')}">${escapeHtml(statusName)}</div>
         </div>
 
-        <div class="meta">
-          <div><strong>対象月：</strong>${escapeHtml(item.target_month || '-')}</div>
-          <div><strong>入力方式：</strong>${item.input_mode === 'days' ? '日数指定' : '日付指定'}</div>
-          <div><strong>日付/日数：</strong>${escapeHtml(scheduleText)}</div>
-
-          <div><strong>代理店：</strong>${escapeHtml(item.agency_name || '-')}</div>
-          <div><strong>連携店舗エリア：</strong>${escapeHtml(item.store_area || '-')}</div>
-
-          <div><strong>実稼働場所：</strong>${escapeHtml(item.work_location || '-')}</div>
-          <div><strong>実稼働エリア：</strong>${escapeHtml(item.work_area || '-')}</div>
-
-          <div><strong>必要枠数：</strong>${escapeHtml(item.required_lines || '-')}</div>
-          <div><strong>必要人数：</strong>${escapeHtml(item.required_people || '-')}</div>
-
-          <div><strong>ステータス：</strong>${escapeHtml(statusName)}</div>
-          <div><strong>登録日時：</strong>${escapeHtml(item.created_at || '-')}</div>
+        <div class="case-main-row">
+          <div class="case-main-title">${escapeHtml(caseTypeName)} / ${escapeHtml(item.store_name || '-')}</div>
+          <div class="target-month-badge">${escapeHtml(item.target_month || '-')}</div>
         </div>
 
-        ${renderMemo(item)}
+        <div class="overview-meta">
+          ${overviewItemHtml('必要人数', item.required_people ? `${item.required_people}人` : '-', true)}
+          ${renderOptionalOverviewItems(item, isRetailStore)}
+        </div>
 
         <div class="card-actions">
           <a class="detail-link" href="${detailUrl}">詳細を見る</a>
+          <div class="case-id-small">${escapeHtml(item.case_id || '-')}</div>
         </div>
       `;
 
@@ -277,23 +386,54 @@
 
 
     /****************************************************
-     * renderMemo ここから
+     * renderOptionalOverviewItems ここから
+     * 店頭稼働では代理店・実稼働場所を一覧では省略
      ****************************************************/
-    function renderMemo(item) {
-      const memos = [];
-
-      if (item.client_memo) memos.push('先方メモ：' + item.client_memo);
-      if (item.internal_memo) memos.push('社内メモ：' + item.internal_memo);
-      if (item.operation_memo) memos.push('運用メモ：' + item.operation_memo);
-
-      if (memos.length === 0) {
+    function renderOptionalOverviewItems(item, isRetailStore) {
+      if (isRetailStore) {
         return '';
       }
 
-      return `<div class="memo">${escapeHtml(memos.join('\n'))}</div>`;
+      return `
+        ${overviewItemHtml('代理店', item.agency_name || '-')}
+        ${overviewItemHtml('実稼働場所', item.work_location || '-')}
+      `;
     }
     /****************************************************
-     * renderMemo ここまで
+     * renderOptionalOverviewItems ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * overviewItemHtml ここから
+     ****************************************************/
+    function overviewItemHtml(label, value, important) {
+      const importantClass = important ? ' important' : '';
+
+      return `
+        <div class="overview-item${importantClass}">
+          <span class="overview-label">${escapeHtml(label)}</span>
+          <span class="overview-value">${escapeHtml(displayValue(value))}</span>
+        </div>
+      `;
+    }
+    /****************************************************
+     * overviewItemHtml ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 表示整形 ここから
+     ****************************************************/
+    function formatCreatedAt(value) {
+      if (!value) {
+        return '登録日時：-';
+      }
+
+      return `登録：${value}`;
+    }
+    /****************************************************
+     * 表示整形 ここまで
      ****************************************************/
 
 
