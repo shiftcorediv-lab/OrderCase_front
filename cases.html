@@ -108,7 +108,7 @@
 
     @media (min-width: 720px) and (max-width: 979px) {
       .case-main-row {
-        grid-template-columns: 1fr 1.5fr;
+        grid-template-columns: 1fr 1.5fr 90px 130px;
       }
     }
 
@@ -169,7 +169,9 @@
       margin-top: 4px;
       padding-top: 8px;
       border-top: 1px solid #edf0f3;
-      word-break: break-word;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .overview-line strong {
@@ -260,21 +262,28 @@
       }
 
       .case-main-row {
-        grid-template-columns: 1fr;
-        gap: 5px;
+        grid-template-columns: 1fr auto;
+        gap: 5px 10px;
         margin-bottom: 6px;
       }
 
       .target-month-title {
+        grid-column: 1 / -1;
         font-size: 17px;
       }
 
       .case-main-title {
+        grid-column: 1 / 2;
         font-size: 18px;
+        min-width: 0;
       }
 
       .required-people-main {
+        grid-column: 2 / 3;
+        align-self: end;
+        justify-self: end;
         font-size: 21px;
+        text-align: right;
       }
 
       .required-people-main span {
@@ -282,6 +291,7 @@
       }
 
       .detail-link {
+        grid-column: 1 / -1;
         width: 100%;
         padding: 10px 12px;
         font-size: 14px;
@@ -291,6 +301,9 @@
         font-size: 11px;
         margin-top: 4px;
         padding-top: 7px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .case-bottom-row {
