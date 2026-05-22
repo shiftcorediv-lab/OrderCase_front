@@ -247,14 +247,46 @@
       color: #027a48;
       font-weight: 700;
     }
+    .top-nav {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #cfd3d7;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.nav-link.active {
+  background: white;
+  color: #202124;
+}
+
+.nav-link:hover {
+  text-decoration: none;
+  background: rgba(255,255,255,0.14);
+}
   </style>
 </head>
 
 <body>
   <header>
-    <h1>OrderCase</h1>
-    <p>案件登録フォーム v1</p>
-  </header>
+  <h1>OrderCase</h1>
+  <p>案件登録フォーム v1</p>
+
+  <nav class="top-nav">
+    <a class="nav-link active" href="./index.html">案件登録</a>
+    <a class="nav-link" href="./cases.html">案件一覧</a>
+  </nav>
+</header>
 
   <main>
     <section>
