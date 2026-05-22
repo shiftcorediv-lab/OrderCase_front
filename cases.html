@@ -11,15 +11,59 @@
     /****************************************************
      * cases.html 専用スタイル
      ****************************************************/
-    .toolbar {
-      display: grid;
+    .filter-panel {
+      margin-bottom: 16px;
+    }
+
+    .filter-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 10px;
+      background: #757575;
+      color: #fff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .filter-toggle-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-toggle-icon {
+      font-size: 14px;
+      transition: transform .15s;
+    }
+
+    .filter-panel.open .filter-toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    .toolbar {
+      display: none;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .filter-panel.open .toolbar {
+      display: grid;
     }
 
     @media (min-width: 860px) {
-      .toolbar {
+      .filter-panel .toolbar {
+        display: grid;
         grid-template-columns: 1fr 150px 150px 150px auto;
         align-items: end;
+      }
+
+      .filter-toggle {
+        width: auto;
+        min-width: 190px;
       }
     }
 
@@ -171,29 +215,126 @@
       word-break: break-all;
     }
 
-    @media (max-width: 979px) {
-      .detail-link {
-        width: auto;
-        min-width: 140px;
-      }
-    }
-
+    /****************************************************
+     * スマホ表示調整
+     ****************************************************/
     @media (max-width: 719px) {
+      main {
+        padding: 10px;
+      }
+
+      .message {
+        font-size: 12px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+      }
+
+      .filter-panel {
+        margin-bottom: 10px;
+      }
+
+      .filter-toggle {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+
+      .toolbar {
+        gap: 8px;
+        margin-top: 8px;
+        padding: 12px;
+      }
+
+      .toolbar label {
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+
+      .toolbar input,
+      .toolbar select {
+        font-size: 14px;
+        padding: 10px 11px;
+      }
+
+      .toolbar button {
+        padding: 11px 12px;
+        font-size: 14px;
+      }
+
+      .case-list {
+        gap: 10px;
+      }
+
+      .case-card {
+        padding: 14px;
+        border-radius: 14px;
+      }
+
+      .case-top-row {
+        margin-bottom: 10px;
+      }
+
+      .created-at {
+        font-size: 10px;
+      }
+
+      .status {
+        font-size: 11px;
+        padding: 5px 9px;
+      }
+
       .case-main-row {
         grid-template-columns: 1fr;
+        gap: 7px;
+        margin-bottom: 10px;
       }
 
-      .target-month-title,
+      .target-month-title {
+        font-size: 18px;
+      }
+
       .case-main-title {
-        font-size: 21px;
+        font-size: 19px;
       }
 
       .required-people-main {
-        font-size: 24px;
+        font-size: 22px;
+      }
+
+      .required-people-main span {
+        font-size: 11px;
       }
 
       .detail-link {
         width: 100%;
+        padding: 11px 14px;
+        font-size: 14px;
+      }
+
+      .overview-meta {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .overview-item {
+        padding: 9px 10px;
+      }
+
+      .overview-label {
+        font-size: 11px;
+      }
+
+      .overview-value {
+        font-size: 13px;
+      }
+
+      .case-bottom-row {
+        margin-top: 8px;
+        padding-top: 8px;
+      }
+
+      .case-id-small {
+        font-size: 10px;
       }
     }
   </style>
@@ -210,37 +351,44 @@
   <header id="ordercaseHeader"></header>
 
   <main>
-    <div class="toolbar">
-      <div>
-        <label for="keyword">キーワード</label>
-        <input id="keyword" placeholder="案件ID・代理店・店舗・場所で検索" />
-      </div>
+    <div class="filter-panel" id="filterPanel">
+      <button type="button" class="filter-toggle" id="filterToggleButton">
+        <span class="filter-toggle-text">絞り込み条件</span>
+        <span class="filter-toggle-icon">▼</span>
+      </button>
 
-      <div>
-        <label for="targetMonthFilter">対象月</label>
-        <input id="targetMonthFilter" type="month" />
-      </div>
+      <div class="toolbar">
+        <div>
+          <label for="keyword">キーワード</label>
+          <input id="keyword" placeholder="案件ID・代理店・店舗・場所で検索" />
+        </div>
 
-      <div>
-        <label for="statusFilter">ステータス</label>
-        <select id="statusFilter">
-          <option value="">すべて</option>
-          <option value="received">受付済み</option>
-          <option value="checking">確認中</option>
-          <option value="confirmed">確定</option>
-          <option value="cancelled">キャンセル</option>
-          <option value="archived">アーカイブ</option>
-        </select>
-      </div>
+        <div>
+          <label for="targetMonthFilter">対象月</label>
+          <input id="targetMonthFilter" type="month" />
+        </div>
 
-      <div>
-        <label for="caseTypeFilter">案件種別</label>
-        <select id="caseTypeFilter">
-          <option value="">すべて</option>
-        </select>
-      </div>
+        <div>
+          <label for="statusFilter">ステータス</label>
+          <select id="statusFilter">
+            <option value="">すべて</option>
+            <option value="received">受付済み</option>
+            <option value="checking">確認中</option>
+            <option value="confirmed">確定</option>
+            <option value="cancelled">キャンセル</option>
+            <option value="archived">アーカイブ</option>
+          </select>
+        </div>
 
-      <button type="button" id="reloadButton">再読み込み</button>
+        <div>
+          <label for="caseTypeFilter">案件種別</label>
+          <select id="caseTypeFilter">
+            <option value="">すべて</option>
+          </select>
+        </div>
+
+        <button type="button" id="reloadButton">再読み込み</button>
+      </div>
     </div>
 
     <div class="message" id="messageBox">読み込み中...</div>
@@ -275,6 +423,7 @@
       try {
         renderOrderCaseHeader('cases', '案件一覧');
         setupEventListeners();
+        setupFilterPanel();
         await loadListPageData();
 
       } catch (error) {
@@ -297,9 +446,38 @@
       document.getElementById('targetMonthFilter').addEventListener('change', loadListPageData);
       document.getElementById('statusFilter').addEventListener('change', loadListPageData);
       document.getElementById('caseTypeFilter').addEventListener('change', loadListPageData);
+
+      document.getElementById('filterToggleButton').addEventListener('click', toggleFilterPanel);
     }
     /****************************************************
      * setupEventListeners ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * setupFilterPanel ここから
+     * PCでは開いた状態、スマホでは閉じた状態にする
+     ****************************************************/
+    function setupFilterPanel() {
+      const panel = document.getElementById('filterPanel');
+
+      if (window.innerWidth >= 860) {
+        panel.classList.add('open');
+      }
+    }
+    /****************************************************
+     * setupFilterPanel ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * toggleFilterPanel ここから
+     ****************************************************/
+    function toggleFilterPanel() {
+      document.getElementById('filterPanel').classList.toggle('open');
+    }
+    /****************************************************
+     * toggleFilterPanel ここまで
      ****************************************************/
 
 
