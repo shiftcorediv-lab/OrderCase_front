@@ -65,10 +65,12 @@
     }
 
     .day {
-      aspect-ratio: 1 / 1;
+      min-height: 44px;
+      aspect-ratio: auto;
       border: 1px solid #d9dee5;
       border-radius: 12px;
       background: #fff;
+      color: #333;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -77,12 +79,22 @@
       user-select: none;
       transition: .15s;
       font-weight: bold;
+      padding: 0;
     }
 
     .day.blank {
       background: transparent;
       border: none;
       cursor: default;
+      color: transparent;
+    }
+
+    .day.sun {
+      color: #c62828;
+    }
+
+    .day.sat {
+      color: #1565c0;
     }
 
     .day.selected {
@@ -91,7 +103,7 @@
       border-color: #4caf50;
       font-weight: bold;
     }
-
+    
     .selected-date-list {
       display: grid;
       gap: 10px;
