@@ -144,6 +144,16 @@
         min-width: 0;
       }
 
+      input[type="month"],
+      input[type="date"],
+      input[type="time"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+      }
+
       .actions {
         display: grid;
         grid-template-columns: 1fr;
@@ -185,7 +195,7 @@
     </div>
 
     <div class="read-only-note">
-      編集画面の表示確認用です。保存処理は次の工程で追加します。
+      編集保存に対応しました。日付明細そのものの編集はまだ未対応です。
     </div>
 
     <div class="message" id="messageBox">読み込み中...</div>
@@ -472,9 +482,39 @@
         document.getElementById(id).addEventListener('input', updateRequiredPeople);
       });
 
-      document.getElementById('saveButton').addEventListener('click', () => {
-        setMessage('保存処理は次の工程で実装します。', 'error');
+      [
+        'targetMonth',
+        'caseType',
+        'status',
+        'inputMode',
+        'replyDeadline',
+        'agencyName',
+        'storeName',
+        'storeArea',
+        'workLocation',
+        'workArea',
+        'workStartTime',
+        'workEndTime',
+        'meetingTime',
+        'meetingPlace',
+        'requiredSkill',
+        'requestedDays',
+        'amount',
+        'amountType',
+        'taxType',
+        'amountMemo',
+        'clientMemo',
+        'internalMemo',
+        'operationMemo'
+      ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('input', updateSaveSummary);
+          el.addEventListener('change', updateSaveSummary);
+        }
       });
+
+      document.getElementById('saveButton').addEventListener('click', submitUpdateCase);
     }
     /****************************************************
      * setupEventListeners ここまで
@@ -669,6 +709,128 @@
 
 
     /****************************************************
+     * submitUpdateCase ここから
+     ****************************************************/
+    async function submitUpdateCase() {
+      try {
+        clearMessage();
+
+        const payload = buildUpdatePayload();
+        validateUpdatePayload(payload);
+
+        const button = document.getElementById('saveButton');
+        button.disabled = true;
+        button.textContent = '保存中...';
+
+        showLoading('案件を保存中...');
+
+        const json = await fetchApiJson('', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify({
+            action: 'updateCase',
+            payload
+          })
+        });
+
+        if (!json.ok) {
+          throw new Error(json.message || '保存に失敗しました');
+        }
+
+        setMessage(`保存しました：${json.data.case_id}`, 'success');
+
+        const caseId = json.data.case_id;
+        document.getElementById('detailLink').href = `./case.html?case_id=${encodeURIComponent(caseId)}`;
+
+      } catch (error) {
+        console.error(error);
+        setMessage(error.message, 'error');
+
+      } finally {
+        const button = document.getElementById('saveButton');
+        button.disabled = false;
+        button.textContent = '保存する';
+        hideLoading();
+      }
+    }
+    /****************************************************
+     * submitUpdateCase ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * buildUpdatePayload ここから
+     ****************************************************/
+    function buildUpdatePayload() {
+      return {
+        case_id: document.getElementById('caseId').value.trim(),
+
+        target_month: document.getElementById('targetMonth').value,
+        case_type: document.getElementById('caseType').value,
+        status: document.getElementById('status').value,
+        input_mode: document.getElementById('inputMode').value,
+        reply_deadline: document.getElementById('replyDeadline').value,
+
+        agency_name: document.getElementById('agencyName').value.trim(),
+        store_name: document.getElementById('storeName').value.trim(),
+        store_area: document.getElementById('storeArea').value,
+
+        work_location: document.getElementById('workLocation').value.trim(),
+        work_area: document.getElementById('workArea').value,
+        work_start_time: document.getElementById('workStartTime').value,
+        work_end_time: document.getElementById('workEndTime').value,
+        meeting_time: document.getElementById('meetingTime').value,
+        meeting_place: document.getElementById('meetingPlace').value.trim(),
+
+        requested_days: document.getElementById('inputMode').value === 'days'
+          ? document.getElementById('requestedDays').value
+          : '',
+
+        required_lines: Number(document.getElementById('requiredLines').value || 1),
+        people_per_line: Number(document.getElementById('peoplePerLine').value || 1),
+        required_skill: document.getElementById('requiredSkill').value || 'any',
+
+        amount: document.getElementById('amount').value,
+        amount_type: document.getElementById('amountType').value,
+        tax_type: document.getElementById('taxType').value,
+        amount_memo: document.getElementById('amountMemo').value.trim(),
+
+        client_memo: document.getElementById('clientMemo').value.trim(),
+        internal_memo: document.getElementById('internalMemo').value.trim(),
+        operation_memo: document.getElementById('operationMemo').value.trim(),
+
+        updated_by: '画面編集'
+      };
+    }
+    /****************************************************
+     * buildUpdatePayload ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * validateUpdatePayload ここから
+     ****************************************************/
+    function validateUpdatePayload(payload) {
+      if (!payload.case_id) throw new Error('案件IDがありません。');
+      if (!payload.target_month) throw new Error('対象月を入力してください。');
+      if (!payload.case_type) throw new Error('案件種別を選択してください。');
+      if (!payload.input_mode) throw new Error('入力方式を選択してください。');
+      if (!payload.agency_name) throw new Error('代理店名を入力してください。');
+      if (!payload.store_name) throw new Error('連携店舗を入力してください。');
+      if (!payload.store_area) throw new Error('連携店舗エリアを選択してください。');
+
+      if (payload.input_mode === 'days' && !payload.requested_days) {
+        throw new Error('日数指定の場合、希望日数を入力してください。');
+      }
+    }
+    /****************************************************
+     * validateUpdatePayload ここまで
+     ****************************************************/
+
+
+    /****************************************************
      * updateSaveSummary ここから
      ****************************************************/
     function updateSaveSummary() {
@@ -703,6 +865,10 @@
       const box = document.getElementById('messageBox');
       box.textContent = text;
       box.className = `message ${type || ''}`;
+    }
+
+    function clearMessage() {
+      setMessage('', '');
     }
     /****************************************************
      * 小物関数 ここまで
