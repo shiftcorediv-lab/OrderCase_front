@@ -214,6 +214,31 @@
       white-space: pre-wrap;
     }
 
+    .card-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #edf0f3;
+      flex-wrap: wrap;
+    }
+
+    .detail-link {
+      display: inline-block;
+      border-radius: 12px;
+      padding: 10px 13px;
+      font-size: 13px;
+      font-weight: 900;
+      background: #202124;
+      color: white;
+      text-decoration: none;
+    }
+
+    .detail-link:hover {
+      opacity: 0.88;
+    }
+
     .empty {
       background: white;
       border-radius: 18px;
@@ -483,6 +508,7 @@
       const caseTypeName = getCaseTypeName(item.case_type);
       const statusName = getStatusName(item.status);
       const scheduleText = getScheduleText(item);
+      const detailUrl = `./case.html?case_id=${encodeURIComponent(item.case_id)}`;
 
       card.innerHTML = `
         <div class="case-head">
@@ -512,6 +538,10 @@
         </div>
 
         ${renderMemo(item)}
+
+        <div class="card-actions">
+          <a class="detail-link" href="${detailUrl}">詳細を見る</a>
+        </div>
       `;
 
       return card;
