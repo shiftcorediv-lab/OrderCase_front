@@ -1019,6 +1019,17 @@ async function loadBootstrap() {
         button.textContent = '案件を登録する';
       }
     }
+      applyCaseTypeRule();
+      renderCalendar();
+      updateRequiredPeople();
+      updateInputModeView();
+      updateSummary();
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+  });
+}
     /****************************************************
      * submitCase ここまで
      ****************************************************/
