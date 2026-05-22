@@ -1132,10 +1132,10 @@ async function loadBootstrap() {
         : `希望日数：${document.getElementById('requestedDays').value || '-'}日`;
 
       document.getElementById('summaryBox').innerHTML = `
-        入力方式：${mode === 'dates' ? '日付指定' : '日数指定'}<br>
-        ${dateText}<br>
-        必要枠数：${lines} / 1枠あたり人数：${ppl} / 必要人数：${people}
-      `;
+  入力方式：${mode === 'dates' ? '日付指定' : '日数指定'}<br>
+  ${dateText}<br>
+  必要数：${lines}枠 × ${ppl}人 = ${people}人
+`;
     }
     /****************************************************
      * updateSummary ここまで
