@@ -11,6 +11,19 @@
     /****************************************************
      * cases.html 専用スタイル
      ****************************************************/
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    main {
+      width: 100%;
+      max-width: 980px;
+      overflow-x: hidden;
+    }
+
     .filter-panel {
       margin-bottom: 12px;
     }
@@ -48,6 +61,7 @@
       display: none;
       gap: 10px;
       margin-top: 10px;
+      min-width: 0;
     }
 
     .filter-panel.open .toolbar {
@@ -57,7 +71,7 @@
     @media (min-width: 860px) {
       .filter-panel .toolbar {
         display: grid;
-        grid-template-columns: 1fr 150px 150px 150px auto;
+        grid-template-columns: minmax(0, 1fr) 150px 150px 150px auto;
         align-items: end;
       }
 
@@ -70,12 +84,19 @@
     .case-list {
       display: grid;
       gap: 10px;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     .case-card {
       padding: 14px 16px;
       position: relative;
       border-radius: 14px;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .case-top-row {
@@ -84,6 +105,7 @@
       align-items: flex-start;
       gap: 10px;
       margin-bottom: 10px;
+      min-width: 0;
     }
 
     .created-at {
@@ -91,6 +113,10 @@
       color: #777;
       font-weight: bold;
       line-height: 1.5;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .case-main-row {
@@ -98,17 +124,23 @@
       gap: 10px;
       margin-bottom: 8px;
       align-items: center;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .case-main-row > * {
+      min-width: 0;
     }
 
     @media (min-width: 980px) {
       .case-main-row {
-        grid-template-columns: 0.9fr 1.8fr 100px 130px;
+        grid-template-columns: 0.9fr minmax(0, 1.8fr) 100px 130px;
       }
     }
 
     @media (min-width: 720px) and (max-width: 979px) {
       .case-main-row {
-        grid-template-columns: 1fr 1.5fr 90px 130px;
+        grid-template-columns: 1fr minmax(0, 1.5fr) 90px 130px;
       }
     }
 
@@ -118,6 +150,7 @@
       color: #333;
       line-height: 1.3;
       word-break: keep-all;
+      min-width: 0;
     }
 
     .case-main-title {
@@ -126,6 +159,7 @@
       color: #333;
       line-height: 1.3;
       word-break: break-word;
+      min-width: 0;
     }
 
     .required-people-main {
@@ -134,6 +168,7 @@
       color: #2e7d32;
       line-height: 1.15;
       white-space: nowrap;
+      min-width: 0;
     }
 
     .required-people-main span {
@@ -155,6 +190,7 @@
       color: #fff;
       text-decoration: none;
       white-space: nowrap;
+      min-width: 0;
     }
 
     .detail-link:hover {
@@ -162,6 +198,10 @@
     }
 
     .overview-line {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
       font-size: 12px;
       color: #666;
       font-weight: bold;
@@ -183,6 +223,7 @@
       justify-content: flex-end;
       align-items: center;
       margin-top: 6px;
+      min-width: 0;
     }
 
     .case-id-small {
@@ -190,7 +231,11 @@
       color: #888;
       font-weight: bold;
       text-align: right;
-      word-break: break-all;
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /****************************************************
@@ -254,17 +299,20 @@
 
       .created-at {
         font-size: 10px;
+        max-width: 70%;
       }
 
       .status {
         font-size: 10px;
         padding: 4px 8px;
+        flex-shrink: 0;
       }
 
       .case-main-row {
-        grid-template-columns: 1fr auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         gap: 5px 10px;
         margin-bottom: 6px;
+        align-items: end;
       }
 
       .target-month-title {
@@ -276,6 +324,10 @@
         grid-column: 1 / 2;
         font-size: 18px;
         min-width: 0;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
 
       .required-people-main {
@@ -284,6 +336,7 @@
         justify-self: end;
         font-size: 21px;
         text-align: right;
+        min-width: 42px;
       }
 
       .required-people-main span {
