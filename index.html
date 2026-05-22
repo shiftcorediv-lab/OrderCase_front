@@ -477,13 +477,12 @@
 
   <script>
     /****************************************************
-     * 設定 ここから
-     ****************************************************/
-    const API_URL = 'https://ordercaseapiproxyworker.shiftcore-div.workers.dev';
-    /****************************************************
-     * 設定 ここまで
-     ****************************************************/
-
+ * 設定 ここから
+ ****************************************************/
+window.ORDERCASE_API_URL = 'https://ordercaseapiproxyworker.shiftcore-div.workers.dev';
+/****************************************************
+ * 設定 ここまで
+ ****************************************************/
 
     /****************************************************
      * 状態 ここから
@@ -501,14 +500,21 @@
      * 初期化 ここから
      ****************************************************/
     document.addEventListener('DOMContentLoaded', async () => {
-      setupDefaultDates();
-      setupEventListeners();
-      await loadBootstrap();
-      updateRequiredPeople();
-      renderCalendar();
-      updateInputModeView();
-      updateSummary();
-    });
+  try {
+    console.log('OrderCase runtime API:', window.ORDERCASE_API_URL);
+
+    setupDefaultDates();
+    setupEventListeners();
+    await loadBootstrap();
+    updateRequiredPeople();
+    renderCalendar();
+    updateInputModeView();
+    updateSummary();
+  } catch (error) {
+    console.error('初期化エラー:', error);
+    setMessage('初期化エラー: ' + error.message, 'error');
+  }
+});
     /****************************************************
      * 初期化 ここまで
      ****************************************************/
@@ -565,32 +571,45 @@
 
 
     /****************************************************
-     * loadBootstrap ここから
-     ****************************************************/
-    async function loadBootstrap() {
-      setMessage('初期データを読み込み中...', '');
+ * loadBootstrap ここから
+ ****************************************************/
+async function loadBootstrap() {
+  setMessage('初期データを読み込み中...', '');
 
-      const url = `${API_URL}?action=bootstrap`;
-      console.log('bootstrap URL:', url);
-      const res = await fetch(url);
-      const json = await res.json();
+  const json = await fetchApiJson('bootstrap');
 
-      if (!json.ok) {
-        throw new Error(json.message || 'bootstrap取得に失敗しました');
-      }
+  if (!json.ok) {
+    throw new Error(json.message || 'bootstrap取得に失敗しました');
+  }
 
-      state.bootstrap = json.data;
+  if (!json.data) {
+    throw new Error('bootstrapのdataが空です');
+  }
 
-      renderCaseTypes();
-      renderAreaOptions();
-      renderStoreDatalists();
+  if (!Array.isArray(json.data.case_types)) {
+    throw new Error('bootstrapにcase_typesがありません');
+  }
 
-      applyCaseTypeRule();
-      setMessage('初期データを読み込みました', 'success');
-    }
-    /****************************************************
-     * loadBootstrap ここまで
-     ****************************************************/
+  if (!json.data.settings) {
+    throw new Error('bootstrapにsettingsがありません');
+  }
+
+  if (!Array.isArray(json.data.stores_master)) {
+    json.data.stores_master = [];
+  }
+
+  state.bootstrap = json.data;
+
+  renderCaseTypes();
+  renderAreaOptions();
+  renderStoreDatalists();
+
+  applyCaseTypeRule();
+  setMessage('初期データを読み込みました', 'success');
+}
+/****************************************************
+ * loadBootstrap ここまで
+ ****************************************************/
 
 
     /****************************************************
@@ -939,18 +958,16 @@
         button.disabled = true;
         button.textContent = '登録中...';
 
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify({
-            action: 'createCase',
-            payload
-          })
-        });
-
-        const json = await res.json();
+        const json = await fetchApiJson(null, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'text/plain;charset=utf-8'
+  },
+  body: JSON.stringify({
+    action: 'createCase',
+    payload
+  })
+});
 
         if (!json.ok) {
           throw new Error(json.message || '登録に失敗しました');
@@ -1111,6 +1128,45 @@
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
     }
+
+    function buildApiUrl(action) {
+  const base = window.ORDERCASE_API_URL;
+
+  if (!base || !base.startsWith('https://')) {
+    throw new Error('API URLが不正です: ' + base);
+  }
+
+  const url = new URL(base);
+  url.searchParams.set('action', action);
+  return url.toString();
+}
+
+async function fetchApiJson(action, options = {}) {
+  const url = action ? buildApiUrl(action) : window.ORDERCASE_API_URL;
+
+  console.log('OrderCase API URL:', url);
+
+  const res = await fetch(url, options);
+  const text = await res.text();
+
+  console.log('OrderCase API status:', res.status);
+  console.log('OrderCase API response head:', text.slice(0, 300));
+
+  let json;
+
+  try {
+    json = JSON.parse(text);
+  } catch (error) {
+    throw new Error(
+      'APIの返答がJSONではありません。実際のURL: ' +
+      url +
+      ' / 返答先頭: ' +
+      text.slice(0, 120)
+    );
+  }
+
+  return json;
+}
     /****************************************************
      * 小物関数 ここまで
      ****************************************************/
