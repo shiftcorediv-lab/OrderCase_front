@@ -13,7 +13,7 @@
      ****************************************************/
     main {
       max-width: 900px;
-      padding-bottom: 130px;
+      padding-bottom: 150px;
     }
 
     .grid {
@@ -34,6 +34,69 @@
 
     .hidden {
       display: none !important;
+    }
+
+    .suggest-wrap {
+      position: relative;
+    }
+
+    .suggest-dropdown {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      background: #fff;
+      border: 1px solid #d0d7de;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      z-index: 2000;
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .suggest-dropdown.show {
+      display: grid;
+      gap: 6px;
+    }
+
+    .suggest-option {
+      width: 100%;
+      background: #f8fafc;
+      color: #333;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .suggest-option:hover {
+      background: #f0fff4;
+      border-color: #b7ebc6;
+    }
+
+    .suggest-main {
+      display: block;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .suggest-sub {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-top: 3px;
+    }
+
+    .suggest-empty {
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #777;
+      line-height: 1.5;
     }
 
     .calendar-head {
@@ -62,6 +125,14 @@
       font-weight: bold;
       color: #666;
       padding: 8px 0;
+    }
+
+    .weekday.sun {
+      color: #c62828;
+    }
+
+    .weekday.sat {
+      color: #1565c0;
     }
 
     .day {
@@ -103,7 +174,7 @@
       border-color: #4caf50;
       font-weight: bold;
     }
-    
+
     .selected-date-list {
       display: grid;
       gap: 10px;
@@ -181,6 +252,30 @@
       opacity: .6;
       cursor: not-allowed;
     }
+
+    @media (max-width: 480px) {
+      main {
+        padding: 10px;
+        padding-bottom: 160px;
+      }
+
+      .summary-bar {
+        padding: 10px;
+      }
+
+      .summary {
+        font-size: 13px;
+        padding: 10px;
+      }
+
+      .submit-button {
+        padding: 14px;
+      }
+
+      .suggest-dropdown {
+        max-height: 220px;
+      }
+    }
   </style>
 </head>
 
@@ -228,16 +323,16 @@
       <h2>代理店・連携店舗</h2>
 
       <div class="grid two">
-        <div>
+        <div class="suggest-wrap">
           <label for="agencyName">代理店名</label>
-          <input id="agencyName" list="agencyList" placeholder="例：〇〇代理店" />
-          <datalist id="agencyList"></datalist>
+          <input id="agencyName" autocomplete="off" placeholder="例：〇〇代理店" />
+          <div class="suggest-dropdown" id="agencySuggest"></div>
         </div>
 
-        <div>
+        <div class="suggest-wrap">
           <label for="storeName">連携店舗</label>
-          <input id="storeName" list="storeList" placeholder="例：ドコモショップ〇〇店" />
-          <datalist id="storeList"></datalist>
+          <input id="storeName" autocomplete="off" placeholder="例：ドコモショップ〇〇店" />
+          <div class="suggest-dropdown" id="storeSuggest"></div>
         </div>
 
         <div>
@@ -247,7 +342,7 @@
       </div>
 
       <p class="hint">
-        未登録の代理店・店舗は、登録時に stores_master へ仮登録されます。
+        候補を選ぶと入力欄に反映されます。店舗候補を選んだ場合、代理店名とエリアも自動入力されます。未登録の代理店・店舗は登録時に stores_master へ仮登録されます。
       </p>
     </section>
 
@@ -433,7 +528,8 @@
      ****************************************************/
     const state = {
       bootstrap: null,
-      selectedDates: []
+      selectedDates: [],
+      storesMaster: []
     };
     /****************************************************
      * 状態 ここまで
@@ -495,8 +591,6 @@
         'requiredLines',
         'peoplePerLine',
         'requestedDays',
-        'agencyName',
-        'storeName',
         'workLocation'
       ].forEach(id => {
         const el = document.getElementById(id);
@@ -505,6 +599,14 @@
           el.addEventListener('change', handleInputChange);
         }
       });
+
+      document.getElementById('agencyName').addEventListener('input', handleAgencyInput);
+      document.getElementById('agencyName').addEventListener('focus', renderAgencySuggestions);
+
+      document.getElementById('storeName').addEventListener('input', handleStoreInput);
+      document.getElementById('storeName').addEventListener('focus', renderStoreSuggestions);
+
+      document.addEventListener('click', handleOutsideSuggestClick);
 
       document.getElementById('caseType').addEventListener('change', applyCaseTypeRule);
       document.getElementById('inputMode').addEventListener('change', updateInputModeView);
@@ -532,12 +634,15 @@
         }
 
         state.bootstrap = json.data;
+        state.storesMaster = json.data.stores_master || [];
 
         renderCaseTypes();
         renderAreaOptions();
-        renderStoreDatalists();
 
         applyCaseTypeRule();
+        renderAgencySuggestions();
+        renderStoreSuggestions();
+
         setMessage('初期データを読み込みました', 'success');
 
       } finally {
@@ -593,37 +698,210 @@
 
 
     /****************************************************
-     * renderStoreDatalists ここから
+     * 候補表示：代理店 ここから
      ****************************************************/
-    function renderStoreDatalists() {
-      const agencyList = document.getElementById('agencyList');
-      const storeList = document.getElementById('storeList');
+    function handleAgencyInput() {
+      renderAgencySuggestions();
+      renderStoreSuggestions();
+      handleInputChange();
+    }
 
-      const agencies = new Set();
-      const stores = new Set();
+    function renderAgencySuggestions() {
+      const box = document.getElementById('agencySuggest');
+      const keyword = document.getElementById('agencyName').value.trim();
 
-      state.bootstrap.stores_master.forEach(row => {
-        if (row.agency_name) agencies.add(row.agency_name);
-        if (row.store_name) stores.add(row.store_name);
+      const agencies = getUniqueAgencies()
+        .filter(row => {
+          if (!keyword) return true;
+          return normalizeText(row.agency_name).includes(normalizeText(keyword));
+        })
+        .slice(0, 10);
+
+      if (agencies.length === 0) {
+        box.innerHTML = '<div class="suggest-empty">一致する代理店候補はありません。手入力で登録できます。</div>';
+        box.classList.add('show');
+        return;
+      }
+
+      box.innerHTML = agencies.map(row => {
+        return `
+          <button type="button" class="suggest-option" data-agency-name="${escapeHtml(row.agency_name)}">
+            <span class="suggest-main">${escapeHtml(row.agency_name)}</span>
+            <span class="suggest-sub">登録済み代理店</span>
+          </button>
+        `;
+      }).join('');
+
+      box.querySelectorAll('.suggest-option').forEach(button => {
+        button.addEventListener('click', () => {
+          selectAgencySuggestion(button.dataset.agencyName);
+        });
       });
 
-      agencyList.innerHTML = '';
-      storeList.innerHTML = '';
+      box.classList.add('show');
+    }
 
-      agencies.forEach(name => {
-        const option = document.createElement('option');
-        option.value = name;
-        agencyList.appendChild(option);
-      });
+    function selectAgencySuggestion(agencyName) {
+      document.getElementById('agencyName').value = agencyName;
 
-      stores.forEach(name => {
-        const option = document.createElement('option');
-        option.value = name;
-        storeList.appendChild(option);
-      });
+      hideSuggest('agencySuggest');
+      renderStoreSuggestions();
+      handleInputChange();
+
+      setTimeout(() => {
+        document.getElementById('storeName').focus();
+      }, 50);
     }
     /****************************************************
-     * renderStoreDatalists ここまで
+     * 候補表示：代理店 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 候補表示：店舗 ここから
+     ****************************************************/
+    function handleStoreInput() {
+      renderStoreSuggestions();
+      handleInputChange();
+    }
+
+    function renderStoreSuggestions() {
+      const box = document.getElementById('storeSuggest');
+      const storeKeyword = document.getElementById('storeName').value.trim();
+      const agencyName = document.getElementById('agencyName').value.trim();
+
+      const matchedAgencyName = findExactAgencyName(agencyName);
+
+      let stores = state.storesMaster.slice();
+
+      if (matchedAgencyName) {
+        stores = stores.filter(row => {
+          return normalizeText(row.agency_name) === normalizeText(matchedAgencyName);
+        });
+      }
+
+      if (storeKeyword) {
+        stores = stores.filter(row => {
+          return normalizeText(row.store_name).includes(normalizeText(storeKeyword));
+        });
+      }
+
+      stores = stores
+        .filter(row => row.store_name)
+        .slice(0, 12);
+
+      if (stores.length === 0) {
+        const message = matchedAgencyName
+          ? 'この代理店に紐づく店舗候補はありません。手入力で登録できます。'
+          : '一致する店舗候補はありません。手入力で登録できます。';
+
+        box.innerHTML = `<div class="suggest-empty">${message}</div>`;
+        box.classList.add('show');
+        return;
+      }
+
+      box.innerHTML = stores.map((row, index) => {
+        return `
+          <button type="button" class="suggest-option" data-store-index="${index}">
+            <span class="suggest-main">${escapeHtml(row.store_name)}</span>
+            <span class="suggest-sub">${escapeHtml(row.agency_name || '-')} / ${escapeHtml(row.store_area || '-')}</span>
+          </button>
+        `;
+      }).join('');
+
+      box.querySelectorAll('.suggest-option').forEach(button => {
+        const index = Number(button.dataset.storeIndex);
+        button.addEventListener('click', () => {
+          selectStoreSuggestion(stores[index]);
+        });
+      });
+
+      box.classList.add('show');
+    }
+
+    function selectStoreSuggestion(row) {
+      document.getElementById('storeName').value = row.store_name || '';
+
+      if (row.agency_name) {
+        document.getElementById('agencyName').value = row.agency_name;
+      }
+
+      if (row.store_area) {
+        document.getElementById('storeArea').value = row.store_area;
+      }
+
+      if (row.store_area && !document.getElementById('workArea').value) {
+        document.getElementById('workArea').value = row.store_area;
+      }
+
+      hideSuggest('storeSuggest');
+      hideSuggest('agencySuggest');
+      handleInputChange();
+    }
+    /****************************************************
+     * 候補表示：店舗 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 候補共通 ここから
+     ****************************************************/
+    function getUniqueAgencies() {
+      const map = {};
+
+      state.storesMaster.forEach(row => {
+        const name = row.agency_name || '';
+        if (!name) return;
+
+        const key = normalizeText(name);
+
+        if (!map[key]) {
+          map[key] = {
+            agency_name: name
+          };
+        }
+      });
+
+      return Object.values(map).sort((a, b) => {
+        return String(a.agency_name).localeCompare(String(b.agency_name), 'ja');
+      });
+    }
+
+    function findExactAgencyName(value) {
+      if (!value) return '';
+
+      const target = normalizeText(value);
+
+      const found = getUniqueAgencies().find(row => {
+        return normalizeText(row.agency_name) === target;
+      });
+
+      return found ? found.agency_name : '';
+    }
+
+    function normalizeText(value) {
+      return String(value || '')
+        .trim()
+        .normalize('NFKC')
+        .replace(/\s+/g, '')
+        .toLowerCase();
+    }
+
+    function handleOutsideSuggestClick(event) {
+      if (!event.target.closest('.suggest-wrap')) {
+        hideSuggest('agencySuggest');
+        hideSuggest('storeSuggest');
+      }
+    }
+
+    function hideSuggest(id) {
+      const box = document.getElementById(id);
+      if (box) {
+        box.classList.remove('show');
+      }
+    }
+    /****************************************************
+     * 候補共通 ここまで
      ****************************************************/
 
 
@@ -1044,6 +1322,9 @@
       document.getElementById('requiredSkill').value = 'any';
 
       state.selectedDates = [];
+
+      hideSuggest('agencySuggest');
+      hideSuggest('storeSuggest');
 
       applyCaseTypeRule();
       renderCalendar();
