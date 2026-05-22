@@ -570,7 +570,9 @@
     async function loadBootstrap() {
       setMessage('初期データを読み込み中...', '');
 
-      const res = await fetch(`${API_URL}?action=bootstrap`);
+      const url = `${API_URL}?action=bootstrap`;
+      console.log('bootstrap URL:', url);
+      const res = await fetch(url);
       const json = await res.json();
 
       if (!json.ok) {
