@@ -291,15 +291,19 @@
      * 初期化 ここから
      ****************************************************/
     document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        setupEventListeners();
-        await loadBootstrap();
-        await loadCases();
-      } catch (error) {
-        console.error(error);
-        setMessage('読み込みエラー: ' + error.message, 'error');
-      }
-    });
+  try {
+    setupEventListeners();
+
+    await Promise.all([
+      loadBootstrap(),
+      loadCases()
+    ]);
+
+  } catch (error) {
+    console.error(error);
+    setMessage('読み込みエラー: ' + error.message, 'error');
+  }
+});
     /****************************************************
      * 初期化 ここまで
      ****************************************************/
@@ -319,24 +323,24 @@
      ****************************************************/
 
 
-    /****************************************************
-     * loadBootstrap ここから
-     ****************************************************/
-    async function loadBootstrap() {
-      const json = await fetchApiJson('bootstrap');
+/****************************************************
+ * loadBootstrap ここから
+ * 一覧画面では stores_master が不要なので case_types だけ取得する
+ ****************************************************/
+async function loadBootstrap() {
+  const json = await fetchApiJson('getCaseTypes');
 
-      if (!json.ok) {
-        throw new Error(json.message || 'bootstrap取得に失敗しました');
-      }
+  if (!json.ok) {
+    throw new Error(json.message || '案件種別取得に失敗しました');
+  }
 
-      state.caseTypes = json.data.case_types || [];
-      state.settings = json.data.settings || {};
+  state.caseTypes = json.data.case_types || [];
 
-      renderCaseTypeFilter();
-    }
-    /****************************************************
-     * loadBootstrap ここまで
-     ****************************************************/
+  renderCaseTypeFilter();
+}
+/****************************************************
+ * loadBootstrap ここまで
+ ****************************************************/
 
 
     /****************************************************
