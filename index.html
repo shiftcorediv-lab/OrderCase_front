@@ -36,6 +36,32 @@
       display: none !important;
     }
 
+/****************************************************
+ * スマホ入力欄はみ出し防止 ここから
+ ****************************************************/
+input,
+select,
+textarea {
+  max-width: 100%;
+  min-width: 0;
+}
+
+section {
+  overflow: hidden;
+}
+
+input[type="month"],
+input[type="date"],
+input[type="time"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  max-width: 100%;
+}
+/****************************************************
+ * スマホ入力欄はみ出し防止 ここまで
+ ****************************************************/
+    
     .suggest-wrap {
       position: relative;
     }
@@ -254,32 +280,66 @@
     }
 
     @media (max-width: 480px) {
-      main {
-        padding: 10px;
-        padding-bottom: 95px;
-      }
+  main {
+    padding: 10px;
+    padding-bottom: 95px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
 
-      .summary-bar {
-        padding: 10px;
-      }
+  section {
+    overflow: hidden;
+  }
 
-      .summary {
-        display: none;
-      }
+  .grid,
+  .grid.two,
+  .grid.three {
+    min-width: 0;
+  }
 
-      #messageBox {
-        font-size: 13px;
-        margin-top: 0;
-      }
+  .grid > div {
+    min-width: 0;
+  }
 
-      .submit-button {
-        padding: 14px;
-      }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
 
-      .suggest-dropdown {
-        max-height: 220px;
-      }
-    }
+  input[type="month"],
+  input[type="date"],
+  input[type="time"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .summary-bar {
+    padding: 10px;
+  }
+
+  .summary {
+    display: none;
+  }
+
+  #messageBox {
+    font-size: 13px;
+    margin-top: 0;
+  }
+
+  .submit-button {
+    padding: 14px;
+  }
+
+  .suggest-dropdown {
+    max-height: 220px;
+  }
+}
   </style>
 </head>
 
