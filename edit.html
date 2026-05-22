@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OrderCase 案件編集</title>
+
+  <link rel="stylesheet" href="./css/common.css" />
+
+  <style>
+    /****************************************************
+     * edit.html 専用スタイル
+     ****************************************************/
+    main {
+      max-width: 900px;
+      padding-bottom: 120px;
+    }
+
+    .actions {
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .actions .button-link {
+      min-width: 140px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 720px) {
+      .grid.two {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .grid.three {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .read-only-note {
+      padding: 14px;
+      border-radius: 12px;
+      background: #fff6ed;
+      border: 1px solid #fed7aa;
+      color: #c4320a;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .save-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.94);
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+    }
+
+    .save-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 720px) {
+      .save-inner {
+        grid-template-columns: 1fr auto;
+        align-items: center;
+      }
+    }
+
+    .save-summary {
+      font-size: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      line-height: 1.7;
+      font-weight: bold;
+    }
+
+    .save-button {
+      border: none;
+      border-radius: 12px;
+      padding: 16px 18px;
+      font-size: 16px;
+      font-weight: bold;
+      background: #4caf50;
+      color: white;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .save-button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 480px) {
+      main {
+        padding: 10px;
+        padding-bottom: 95px;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      section {
+        overflow: hidden;
+      }
+
+      .grid,
+      .grid.two,
+      .grid.three {
+        min-width: 0;
+      }
+
+      .grid > div {
+        min-width: 0;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .actions .button-link {
+        width: 100%;
+      }
+
+      .save-bar {
+        padding: 10px;
+      }
+
+      .save-summary {
+        display: none;
+      }
+
+      .save-button {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">読み込み中...</div>
+    </div>
+  </div>
+
+  <header id="ordercaseHeader"></header>
+
+  <main>
+    <div class="actions">
+      <a class="button-link secondary" href="./cases.html">案件一覧へ戻る</a>
+      <a class="button-link secondary" id="detailLink" href="./case.html">詳細へ戻る</a>
+    </div>
+
+    <div class="read-only-note">
+      編集画面の表示確認用です。保存処理は次の工程で追加します。
+    </div>
+
+    <div class="message" id="messageBox">読み込み中...</div>
+
+    <section>
+      <h2>基本情報</h2>
+
+      <div class="grid two">
+        <div>
+          <label for="caseId">案件ID</label>
+          <input id="caseId" readonly />
+        </div>
+
+        <div>
+          <label for="targetMonth">対象月</label>
+          <input id="targetMonth" type="month" />
+        </div>
+
+        <div>
+          <label for="caseType">案件種別</label>
+          <select id="caseType"></select>
+        </div>
+
+        <div>
+          <label for="status">ステータス</label>
+          <select id="status">
+            <option value="received">受付済み</option>
+            <option value="checking">確認中</option>
+            <option value="confirmed">確定</option>
+            <option value="cancelled">キャンセル</option>
+            <option value="archived">アーカイブ</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="inputMode">入力方式</label>
+          <select id="inputMode">
+            <option value="dates">日付指定</option>
+            <option value="days">日数指定</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="replyDeadline">返答期限</label>
+          <input id="replyDeadline" type="date" />
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>代理店・連携店舗</h2>
+
+      <div class="grid two">
+        <div>
+          <label for="agencyName">代理店名</label>
+          <input id="agencyName" />
+        </div>
+
+        <div>
+          <label for="storeName">連携店舗</label>
+          <input id="storeName" />
+        </div>
+
+        <div>
+          <label for="storeArea">連携店舗エリア</label>
+          <select id="storeArea"></select>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>稼働条件</h2>
+
+      <div class="grid two">
+        <div>
+          <label for="workLocation">実稼働場所・会場</label>
+          <input id="workLocation" />
+        </div>
+
+        <div>
+          <label for="workArea">実稼働エリア</label>
+          <select id="workArea"></select>
+        </div>
+
+        <div>
+          <label for="workStartTime">稼働開始時間</label>
+          <input id="workStartTime" type="time" />
+        </div>
+
+        <div>
+          <label for="workEndTime">稼働終了時間</label>
+          <input id="workEndTime" type="time" />
+        </div>
+
+        <div>
+          <label for="meetingTime">集合時間</label>
+          <input id="meetingTime" type="time" />
+        </div>
+
+        <div>
+          <label for="meetingPlace">集合場所</label>
+          <input id="meetingPlace" />
+        </div>
+
+        <div>
+          <label for="requiredSkill">必要スキル</label>
+          <select id="requiredSkill">
+            <option value="any">指定なし</option>
+            <option value="registration_only">登録のみ</option>
+            <option value="multi_complete">マルチ完結</option>
+            <option value="leader">リーダー候補</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>必要人数・必要枠</h2>
+
+      <div class="grid three">
+        <div>
+          <label for="requiredLines">必要枠数</label>
+          <input id="requiredLines" type="number" min="1" />
+        </div>
+
+        <div>
+          <label for="peoplePerLine">1枠あたり人数</label>
+          <input id="peoplePerLine" type="number" min="1" />
+        </div>
+
+        <div>
+          <label for="requiredPeople">必要人数</label>
+          <input id="requiredPeople" type="number" readonly />
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>日付・日数</h2>
+
+      <div class="grid two">
+        <div>
+          <label for="requestedDays">希望日数</label>
+          <input id="requestedDays" type="number" min="1" />
+          <p class="hint">日数指定の場合に使用します。</p>
+        </div>
+
+        <div>
+          <label for="caseDatesText">日付明細</label>
+          <textarea id="caseDatesText" readonly></textarea>
+          <p class="hint">日付明細の編集は次工程で対応します。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>金額・メモ</h2>
+
+      <div class="grid two">
+        <div>
+          <label for="amount">金額</label>
+          <input id="amount" type="number" min="0" />
+        </div>
+
+        <div>
+          <label for="amountType">金額区分</label>
+          <select id="amountType">
+            <option value="">未入力</option>
+            <option value="per_day">1日あたり</option>
+            <option value="per_person_day">1人日あたり</option>
+            <option value="per_line_day">1枠日あたり</option>
+            <option value="per_case">案件一式</option>
+            <option value="monthly">月額</option>
+            <option value="other">その他</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="taxType">税区分</label>
+          <select id="taxType">
+            <option value="">未入力</option>
+            <option value="tax_included">税込</option>
+            <option value="tax_excluded">税別</option>
+            <option value="unknown">不明</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="amountMemo">金額メモ</label>
+          <input id="amountMemo" />
+        </div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label for="clientMemo">先方メモ</label>
+          <textarea id="clientMemo"></textarea>
+        </div>
+
+        <div>
+          <label for="internalMemo">社内メモ</label>
+          <textarea id="internalMemo"></textarea>
+        </div>
+
+        <div>
+          <label for="operationMemo">運用メモ</label>
+          <textarea id="operationMemo"></textarea>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="save-bar">
+    <div class="save-inner">
+      <div>
+        <div class="save-summary" id="saveSummary">読み込み中...</div>
+      </div>
+      <button class="save-button" id="saveButton" type="button">保存する</button>
+    </div>
+  </div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/loading.js"></script>
+  <script src="./js/navigation.js"></script>
+
+  <script>
+    /****************************************************
+     * 状態 ここから
+     ****************************************************/
+    const state = {
+      caseDetail: null,
+      caseTypes: [],
+      settings: {}
+    };
+    /****************************************************
+     * 状態 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 初期化 ここから
+     ****************************************************/
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        renderOrderCaseHeader('', '案件編集');
+
+        setupLinks();
+        setupEventListeners();
+
+        await loadEditPageData();
+
+      } catch (error) {
+        console.error(error);
+        setMessage('読み込みエラー: ' + error.message, 'error');
+      }
+    });
+    /****************************************************
+     * 初期化 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * setupLinks ここから
+     ****************************************************/
+    function setupLinks() {
+      const caseId = getQueryParam('case_id');
+
+      if (caseId) {
+        document.getElementById('detailLink').href = `./case.html?case_id=${encodeURIComponent(caseId)}`;
+      }
+    }
+    /****************************************************
+     * setupLinks ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * setupEventListeners ここから
+     ****************************************************/
+    function setupEventListeners() {
+      ['requiredLines', 'peoplePerLine'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateRequiredPeople);
+      });
+
+      document.getElementById('saveButton').addEventListener('click', () => {
+        setMessage('保存処理は次の工程で実装します。', 'error');
+      });
+    }
+    /****************************************************
+     * setupEventListeners ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * loadEditPageData ここから
+     * 編集画面に必要な初期データと案件詳細を読み込む
+     ****************************************************/
+    async function loadEditPageData() {
+      const caseId = getQueryParam('case_id');
+
+      if (!caseId) {
+        throw new Error('case_id がURLに指定されていません。');
+      }
+
+      setMessage('案件データを読み込み中...', '');
+      showLoading('案件データを読み込み中...');
+
+      try {
+        const bootstrapJson = await fetchApiJson('bootstrap');
+
+        if (!bootstrapJson.ok) {
+          throw new Error(bootstrapJson.message || '初期データ取得に失敗しました');
+        }
+
+        state.caseTypes = bootstrapJson.data.case_types || [];
+        state.settings = bootstrapJson.data.settings || {};
+
+        renderCaseTypeOptions();
+        renderAreaOptions();
+
+        const detailJson = await fetchApiJsonWithParams('getCaseDetail', {
+          case_id: caseId
+        });
+
+        if (!detailJson.ok) {
+          throw new Error(detailJson.message || '案件詳細の取得に失敗しました');
+        }
+
+        state.caseDetail = detailJson.data;
+
+        fillForm(state.caseDetail);
+        updateRequiredPeople();
+        updateSaveSummary();
+
+        setMessage('案件データを読み込みました', '');
+
+      } finally {
+        hideLoading();
+      }
+    }
+    /****************************************************
+     * loadEditPageData ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * renderCaseTypeOptions ここから
+     ****************************************************/
+    function renderCaseTypeOptions() {
+      const select = document.getElementById('caseType');
+      select.innerHTML = '';
+
+      state.caseTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.case_type_id;
+        option.textContent = type.case_type_name;
+        select.appendChild(option);
+      });
+    }
+    /****************************************************
+     * renderCaseTypeOptions ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * renderAreaOptions ここから
+     ****************************************************/
+    function renderAreaOptions() {
+      const areaText = state.settings.area_options || '関西,東海,関東';
+      const areas = areaText.split(',').map(v => v.trim()).filter(Boolean);
+
+      ['storeArea', 'workArea'].forEach(id => {
+        const select = document.getElementById(id);
+        select.innerHTML = '';
+
+        areas.forEach(area => {
+          const option = document.createElement('option');
+          option.value = area;
+          option.textContent = area;
+          select.appendChild(option);
+        });
+      });
+    }
+    /****************************************************
+     * renderAreaOptions ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * fillForm ここから
+     ****************************************************/
+    function fillForm(item) {
+      setValue('caseId', item.case_id);
+      setValue('targetMonth', item.target_month);
+      setValue('caseType', item.case_type);
+      setValue('status', item.status);
+      setValue('inputMode', item.input_mode);
+      setValue('replyDeadline', item.reply_deadline);
+
+      setValue('agencyName', item.agency_name);
+      setValue('storeName', item.store_name);
+      setValue('storeArea', item.store_area);
+
+      setValue('workLocation', item.work_location);
+      setValue('workArea', item.work_area);
+      setValue('workStartTime', item.work_start_time);
+      setValue('workEndTime', item.work_end_time);
+      setValue('meetingTime', item.meeting_time);
+      setValue('meetingPlace', item.meeting_place);
+      setValue('requiredSkill', item.required_skill);
+
+      setValue('requiredLines', item.required_lines);
+      setValue('peoplePerLine', item.people_per_line);
+      setValue('requiredPeople', item.required_people);
+
+      setValue('requestedDays', item.requested_days);
+
+      setValue('amount', item.amount);
+      setValue('amountType', item.amount_type);
+      setValue('taxType', item.tax_type);
+      setValue('amountMemo', item.amount_memo);
+
+      setValue('clientMemo', item.client_memo);
+      setValue('internalMemo', item.internal_memo);
+      setValue('operationMemo', item.operation_memo);
+
+      renderCaseDatesText(item);
+    }
+    /****************************************************
+     * fillForm ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * renderCaseDatesText ここから
+     ****************************************************/
+    function renderCaseDatesText(item) {
+      const textarea = document.getElementById('caseDatesText');
+
+      if (item.input_mode === 'days') {
+        textarea.value = '日数指定のため日付明細はありません。';
+        return;
+      }
+
+      const dates = Array.isArray(item.case_dates) ? item.case_dates : [];
+
+      if (dates.length === 0) {
+        textarea.value = '日付明細はありません。';
+        return;
+      }
+
+      textarea.value = dates.map(date => {
+        return [
+          `日付：${date.work_date || '-'}`,
+          `必要枠数：${date.required_lines || '-'}`,
+          `1枠あたり人数：${date.people_per_line || '-'}`,
+          `必要人数：${date.required_people || '-'}`,
+          `メモ：${date.memo || '-'}`
+        ].join(' / ');
+      }).join('\n');
+    }
+    /****************************************************
+     * renderCaseDatesText ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * updateRequiredPeople ここから
+     ****************************************************/
+    function updateRequiredPeople() {
+      const lines = Number(document.getElementById('requiredLines').value || 1);
+      const people = Number(document.getElementById('peoplePerLine').value || 1);
+      document.getElementById('requiredPeople').value = lines * people;
+      updateSaveSummary();
+    }
+    /****************************************************
+     * updateRequiredPeople ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * updateSaveSummary ここから
+     ****************************************************/
+    function updateSaveSummary() {
+      const caseId = document.getElementById('caseId').value || '-';
+      const lines = Number(document.getElementById('requiredLines').value || 1);
+      const people = Number(document.getElementById('peoplePerLine').value || 1);
+
+      document.getElementById('saveSummary').innerHTML = `
+        編集中：${escapeHtml(caseId)}<br>
+        必要数：${lines}枠 × ${people}人 = ${lines * people}人
+      `;
+    }
+    /****************************************************
+     * updateSaveSummary ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 小物関数 ここから
+     ****************************************************/
+    function setValue(id, value) {
+      const el = document.getElementById(id);
+
+      if (!el) {
+        return;
+      }
+
+      el.value = value ?? '';
+    }
+
+    function setMessage(text, type) {
+      const box = document.getElementById('messageBox');
+      box.textContent = text;
+      box.className = `message ${type || ''}`;
+    }
+    /****************************************************
+     * 小物関数 ここまで
+     ****************************************************/
+  </script>
+</body>
+</html>
