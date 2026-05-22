@@ -392,25 +392,33 @@
     </section>
 
     <section>
-      <h2>必要数</h2>
+  <h2>必要人数・必要枠</h2>
 
-      <div class="grid three">
-        <div>
-          <label for="requiredLines">必要枠数</label>
-          <input id="requiredLines" type="number" min="1" value="1" />
-        </div>
+  <p class="hint">
+    「必要枠数」は、稼働ライン・ブース・売り場面の数です。<br>
+    例：出張販売1ブースに2人必要な場合は「必要枠数 1」「1枠あたり人数 2」になります。
+  </p>
 
-        <div>
-          <label for="peoplePerLine">1枠あたり人数</label>
-          <input id="peoplePerLine" type="number" min="1" value="1" />
-        </div>
+  <div class="grid three">
+    <div>
+      <label for="requiredLines">必要枠数</label>
+      <input id="requiredLines" type="number" min="1" value="1" />
+      <p class="hint">例：1ブースなら 1、2ブースなら 2</p>
+    </div>
 
-        <div>
-          <label for="requiredPeople">必要人数</label>
-          <input id="requiredPeople" type="number" readonly />
-        </div>
-      </div>
-    </section>
+    <div>
+      <label for="peoplePerLine">1枠あたり人数</label>
+      <input id="peoplePerLine" type="number" min="1" value="1" />
+      <p class="hint">例：1ブースに2人なら 2</p>
+    </div>
+
+    <div>
+      <label for="requiredPeople">必要人数</label>
+      <input id="requiredPeople" type="number" readonly />
+      <p class="hint">必要枠数 × 1枠あたり人数で自動計算</p>
+    </div>
+  </div>
+</section>
 
     <section id="datesSection">
       <h2>日付指定</h2>
