@@ -619,39 +619,41 @@
      ****************************************************/
 
 
-    /****************************************************
-     * loadBootstrap ここから
-     ****************************************************/
-    async function loadBootstrap() {
-      setMessage('初期データを読み込み中...', '');
-      showLoading('初期データを読み込み中...');
+/****************************************************
+ * loadBootstrap ここから
+ ****************************************************/
+async function loadBootstrap() {
+  setMessage('初期データを読み込み中...', '');
+  showLoading('初期データを読み込み中...');
 
-      try {
-        const json = await fetchApiJson('bootstrap');
+  try {
+    const json = await fetchApiJson('bootstrap');
 
-        if (!json.ok) {
-          throw new Error(json.message || 'bootstrap取得に失敗しました');
-        }
-
-        state.bootstrap = json.data;
-        state.storesMaster = json.data.stores_master || [];
-
-        renderCaseTypes();
-        renderAreaOptions();
-
-        applyCaseTypeRule();
-        renderAgencySuggestions();
-        renderStoreSuggestions();
-
-        setMessage('初期データを読み込みました', 'success');
-
-      } finally {
-        hideLoading();
-      }
+    if (!json.ok) {
+      throw new Error(json.message || 'bootstrap取得に失敗しました');
     }
-    /****************************************************
-     * loadBootstrap ここまで
-     ****************************************************/
+
+    state.bootstrap = json.data;
+    state.storesMaster = json.data.stores_master || [];
+
+    renderCaseTypes();
+    renderAreaOptions();
+
+    applyCaseTypeRule();
+
+    // 初期表示では候補を開かない
+    hideSuggest('agencySuggest');
+    hideSuggest('storeSuggest');
+
+    setMessage('初期データを読み込みました', 'success');
+
+  } finally {
+    hideLoading();
+  }
+}
+/****************************************************
+ * loadBootstrap ここまで
+ ****************************************************/
 
 
     /****************************************************
@@ -673,28 +675,51 @@
      ****************************************************/
 
 
-    /****************************************************
-     * renderAreaOptions ここから
-     ****************************************************/
-    function renderAreaOptions() {
-      const areaText = state.bootstrap.settings.area_options || '関西,東海,関東';
-      const areas = areaText.split(',').map(v => v.trim()).filter(Boolean);
+/****************************************************
+ * renderAgencySuggestions ここから
+ ****************************************************/
+function renderAgencySuggestions() {
+  const box = document.getElementById('agencySuggest');
 
-      ['storeArea', 'workArea'].forEach(id => {
-        const select = document.getElementById(id);
-        select.innerHTML = '';
+  if (document.activeElement !== document.getElementById('agencyName')) {
+    return;
+  }
 
-        areas.forEach(area => {
-          const option = document.createElement('option');
-          option.value = area;
-          option.textContent = area;
-          select.appendChild(option);
-        });
-      });
-    }
-    /****************************************************
-     * renderAreaOptions ここまで
-     ****************************************************/
+  const keyword = document.getElementById('agencyName').value.trim();
+
+  const agencies = getUniqueAgencies()
+    .filter(row => {
+      if (!keyword) return true;
+      return normalizeText(row.agency_name).includes(normalizeText(keyword));
+    })
+    .slice(0, 10);
+
+  if (agencies.length === 0) {
+    box.innerHTML = '<div class="suggest-empty">一致する代理店候補はありません。手入力で登録できます。</div>';
+    box.classList.add('show');
+    return;
+  }
+
+  box.innerHTML = agencies.map(row => {
+    return `
+      <button type="button" class="suggest-option" data-agency-name="${escapeHtml(row.agency_name)}">
+        <span class="suggest-main">${escapeHtml(row.agency_name)}</span>
+        <span class="suggest-sub">登録済み代理店</span>
+      </button>
+    `;
+  }).join('');
+
+  box.querySelectorAll('.suggest-option').forEach(button => {
+    button.addEventListener('click', () => {
+      selectAgencySuggestion(button.dataset.agencyName);
+    });
+  });
+
+  box.classList.add('show');
+}
+/****************************************************
+ * renderAgencySuggestions ここまで
+ ****************************************************/
 
 
     /****************************************************
@@ -767,6 +792,11 @@
 
     function renderStoreSuggestions() {
       const box = document.getElementById('storeSuggest');
+
+      if (document.activeElement !== document.getElementById('storeName')) {
+        return;
+      }
+      
       const storeKeyword = document.getElementById('storeName').value.trim();
       const agencyName = document.getElementById('agencyName').value.trim();
 
