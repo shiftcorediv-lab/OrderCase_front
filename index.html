@@ -3,56 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OrderCase</title>
+  <title>OrderCase 案件登録</title>
+
+  <link rel="stylesheet" href="./css/common.css" />
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f6f8;
-      color: #222;
-    }
-
-    header {
-      background: #202124;
-      color: white;
-      padding: 18px 16px;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-      letter-spacing: 0.02em;
-    }
-
-    header p {
-      margin: 6px 0 0;
-      font-size: 13px;
-      color: #cfd3d7;
-    }
-
+    /****************************************************
+     * index.html 専用スタイル
+     ****************************************************/
     main {
       max-width: 900px;
-      margin: 0 auto;
-      padding: 16px;
-      padding-bottom: 120px;
-    }
-
-    section {
-      background: white;
-      border-radius: 18px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-    }
-
-    h2 {
-      font-size: 17px;
-      margin: 0 0 14px;
+      padding-bottom: 130px;
     }
 
     .grid {
@@ -71,36 +32,6 @@
       }
     }
 
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      border: 1px solid #d0d5dd;
-      border-radius: 12px;
-      padding: 11px 12px;
-      font-size: 15px;
-      background: white;
-    }
-
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: #667085;
-      margin-top: 5px;
-      line-height: 1.5;
-    }
-
     .hidden {
       display: none !important;
     }
@@ -114,8 +45,9 @@
     }
 
     .calendar-title {
-      font-weight: 800;
-      font-size: 16px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: left;
     }
 
     .calendar {
@@ -127,31 +59,37 @@
     .weekday {
       text-align: center;
       font-size: 12px;
-      font-weight: 700;
-      color: #667085;
-      padding: 4px 0;
+      font-weight: bold;
+      color: #666;
+      padding: 8px 0;
     }
 
     .day {
-      min-height: 44px;
-      border: 1px solid #d0d5dd;
+      aspect-ratio: 1 / 1;
+      border: 1px solid #d9dee5;
       border-radius: 12px;
       background: #fff;
-      font-size: 14px;
-      font-weight: 700;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      user-select: none;
+      transition: .15s;
+      font-weight: bold;
     }
 
     .day.blank {
-      border: none;
       background: transparent;
+      border: none;
       cursor: default;
     }
 
     .day.selected {
-      background: #202124;
-      color: white;
-      border-color: #202124;
+      background: #4caf50;
+      color: #fff;
+      border-color: #4caf50;
+      font-weight: bold;
     }
 
     .selected-date-list {
@@ -161,38 +99,30 @@
     }
 
     .date-row {
-      border: 1px solid #e4e7ec;
-      border-radius: 14px;
+      border: 1px solid #e3e7eb;
+      border-radius: 12px;
       padding: 12px;
       background: #fafafa;
     }
 
     .date-row-title {
-      font-weight: 800;
+      font-weight: bold;
       margin-bottom: 10px;
     }
 
-    .summary {
-      font-size: 14px;
-      background: #f9fafb;
-      border: 1px solid #e4e7ec;
-      border-radius: 14px;
-      padding: 12px;
-      line-height: 1.7;
-    }
-
-    .bar {
+    .summary-bar {
       position: fixed;
       left: 0;
       right: 0;
       bottom: 0;
       background: rgba(255,255,255,0.94);
-      border-top: 1px solid #e4e7ec;
+      border-top: 1px solid #e2e8f0;
       padding: 12px 16px;
       backdrop-filter: blur(8px);
+      z-index: 1000;
     }
 
-    .bar-inner {
+    .summary-inner {
       max-width: 900px;
       margin: 0 auto;
       display: grid;
@@ -201,92 +131,56 @@
     }
 
     @media (min-width: 720px) {
-      .bar-inner {
+      .summary-inner {
         grid-template-columns: 1fr auto;
         align-items: center;
       }
     }
 
-    button.primary {
+    .summary {
+      font-size: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      line-height: 1.7;
+      font-weight: bold;
+    }
+
+    .submit-button {
       border: none;
-      border-radius: 14px;
-      padding: 14px 18px;
+      border-radius: 12px;
+      padding: 16px 18px;
       font-size: 16px;
-      font-weight: 800;
-      background: #202124;
+      font-weight: bold;
+      background: #4caf50;
       color: white;
       cursor: pointer;
+      width: 100%;
     }
 
-    button.secondary {
-      border: 1px solid #d0d5dd;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 14px;
-      background: white;
-      cursor: pointer;
+    @media (min-width: 720px) {
+      .submit-button {
+        min-width: 180px;
+      }
     }
 
-    button:disabled {
-      opacity: 0.5;
+    .submit-button:disabled {
+      opacity: .6;
       cursor: not-allowed;
     }
-
-    .message {
-      font-size: 13px;
-      color: #475467;
-      line-height: 1.5;
-    }
-
-    .error {
-      color: #b42318;
-      font-weight: 700;
-    }
-
-    .success {
-      color: #027a48;
-      font-weight: 700;
-    }
-    .top-nav {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-
-.nav-link {
-  display: inline-block;
-  padding: 8px 12px;
-  border-radius: 999px;
-  color: #cfd3d7;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 800;
-  border: 1px solid rgba(255,255,255,0.25);
-}
-
-.nav-link.active {
-  background: white;
-  color: #202124;
-}
-
-.nav-link:hover {
-  text-decoration: none;
-  background: rgba(255,255,255,0.14);
-}
   </style>
 </head>
 
 <body>
-  <header>
-  <h1>OrderCase</h1>
-  <p>案件登録フォーム v1</p>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">読み込み中...</div>
+    </div>
+  </div>
 
-  <nav class="top-nav">
-    <a class="nav-link active" href="./index.html">案件登録</a>
-    <a class="nav-link" href="./cases.html">案件一覧</a>
-  </nav>
-</header>
+  <header id="ordercaseHeader"></header>
 
   <main>
     <section>
@@ -392,33 +286,33 @@
     </section>
 
     <section>
-  <h2>必要人数・必要枠</h2>
+      <h2>必要人数・必要枠</h2>
 
-  <p class="hint">
-    「必要枠数」は、稼働ライン・ブース・売り場面の数です。<br>
-    例：出張販売1ブースに2人必要な場合は「必要枠数 1」「1枠あたり人数 2」になります。
-  </p>
+      <p class="hint">
+        「必要枠数」は、稼働ライン・ブース・売り場面の数です。<br>
+        例：出張販売1ブースに2人必要な場合は「必要枠数 1」「1枠あたり人数 2」になります。
+      </p>
 
-  <div class="grid three">
-    <div>
-      <label for="requiredLines">必要枠数</label>
-      <input id="requiredLines" type="number" min="1" value="1" />
-      <p class="hint">例：1ブースなら 1、2ブースなら 2</p>
-    </div>
+      <div class="grid three">
+        <div>
+          <label for="requiredLines">必要枠数</label>
+          <input id="requiredLines" type="number" min="1" value="1" />
+          <p class="hint">例：1ブースなら 1、2ブースなら 2</p>
+        </div>
 
-    <div>
-      <label for="peoplePerLine">1枠あたり人数</label>
-      <input id="peoplePerLine" type="number" min="1" value="1" />
-      <p class="hint">例：1ブースに2人なら 2</p>
-    </div>
+        <div>
+          <label for="peoplePerLine">1枠あたり人数</label>
+          <input id="peoplePerLine" type="number" min="1" value="1" />
+          <p class="hint">例：1ブースに2人なら 2</p>
+        </div>
 
-    <div>
-      <label for="requiredPeople">必要人数</label>
-      <input id="requiredPeople" type="number" readonly />
-      <p class="hint">必要枠数 × 1枠あたり人数で自動計算</p>
-    </div>
-  </div>
-</section>
+        <div>
+          <label for="requiredPeople">必要人数</label>
+          <input id="requiredPeople" type="number" readonly />
+          <p class="hint">必要枠数 × 1枠あたり人数で自動計算</p>
+        </div>
+      </div>
+    </section>
 
     <section id="datesSection">
       <h2>日付指定</h2>
@@ -505,25 +399,23 @@
     </section>
   </main>
 
-  <div class="bar">
-    <div class="bar-inner">
+  <div class="summary-bar">
+    <div class="summary-inner">
       <div>
         <div class="summary" id="summaryBox">読み込み中...</div>
         <div class="message" id="messageBox"></div>
       </div>
-      <button class="primary" id="submitButton" type="button">案件を登録する</button>
+      <button class="submit-button" id="submitButton" type="button">案件を登録する</button>
     </div>
   </div>
 
-  <script>
-    /****************************************************
- * 設定 ここから
- ****************************************************/
-window.ORDERCASE_API_URL = 'https://ordercaseapiproxyworker.shiftcore-div.workers.dev';
-/****************************************************
- * 設定 ここまで
- ****************************************************/
+  <script src="./js/config.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/loading.js"></script>
+  <script src="./js/navigation.js"></script>
 
+  <script>
     /****************************************************
      * 状態 ここから
      ****************************************************/
@@ -540,21 +432,24 @@ window.ORDERCASE_API_URL = 'https://ordercaseapiproxyworker.shiftcore-div.worker
      * 初期化 ここから
      ****************************************************/
     document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    console.log('OrderCase runtime API:', window.ORDERCASE_API_URL);
+      try {
+        renderOrderCaseHeader('index', '案件登録フォーム v1');
 
-    setupDefaultDates();
-    setupEventListeners();
-    await loadBootstrap();
-    updateRequiredPeople();
-    renderCalendar();
-    updateInputModeView();
-    updateSummary();
-  } catch (error) {
-    console.error('初期化エラー:', error);
-    setMessage('初期化エラー: ' + error.message, 'error');
-  }
-});
+        setupDefaultDates();
+        setupEventListeners();
+
+        await loadBootstrap();
+
+        updateRequiredPeople();
+        renderCalendar();
+        updateInputModeView();
+        updateSummary();
+
+      } catch (error) {
+        console.error(error);
+        setMessage('初期化エラー: ' + error.message, 'error');
+      }
+    });
     /****************************************************
      * 初期化 ここまで
      ****************************************************/
@@ -611,45 +506,35 @@ window.ORDERCASE_API_URL = 'https://ordercaseapiproxyworker.shiftcore-div.worker
 
 
     /****************************************************
- * loadBootstrap ここから
- ****************************************************/
-async function loadBootstrap() {
-  setMessage('初期データを読み込み中...', '');
+     * loadBootstrap ここから
+     ****************************************************/
+    async function loadBootstrap() {
+      setMessage('初期データを読み込み中...', '');
+      showLoading('初期データを読み込み中...');
 
-  const json = await fetchApiJson('bootstrap');
+      try {
+        const json = await fetchApiJson('bootstrap');
 
-  if (!json.ok) {
-    throw new Error(json.message || 'bootstrap取得に失敗しました');
-  }
+        if (!json.ok) {
+          throw new Error(json.message || 'bootstrap取得に失敗しました');
+        }
 
-  if (!json.data) {
-    throw new Error('bootstrapのdataが空です');
-  }
+        state.bootstrap = json.data;
 
-  if (!Array.isArray(json.data.case_types)) {
-    throw new Error('bootstrapにcase_typesがありません');
-  }
+        renderCaseTypes();
+        renderAreaOptions();
+        renderStoreDatalists();
 
-  if (!json.data.settings) {
-    throw new Error('bootstrapにsettingsがありません');
-  }
+        applyCaseTypeRule();
+        setMessage('初期データを読み込みました', 'success');
 
-  if (!Array.isArray(json.data.stores_master)) {
-    json.data.stores_master = [];
-  }
-
-  state.bootstrap = json.data;
-
-  renderCaseTypes();
-  renderAreaOptions();
-  renderStoreDatalists();
-
-  applyCaseTypeRule();
-  setMessage('初期データを読み込みました', 'success');
-}
-/****************************************************
- * loadBootstrap ここまで
- ****************************************************/
+      } finally {
+        hideLoading();
+      }
+    }
+    /****************************************************
+     * loadBootstrap ここまで
+     ****************************************************/
 
 
     /****************************************************
@@ -801,9 +686,12 @@ async function loadBootstrap() {
       title.textContent = `${year}年${month}月`;
 
       const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-      weekdays.forEach(w => {
+
+      weekdays.forEach((w, index) => {
         const div = document.createElement('div');
         div.className = 'weekday';
+        if (index === 0) div.classList.add('sun');
+        if (index === 6) div.classList.add('sat');
         div.textContent = w;
         calendar.appendChild(div);
       });
@@ -823,10 +711,15 @@ async function loadBootstrap() {
 
       for (let day = 1; day <= lastDay; day++) {
         const date = `${targetMonth}-${String(day).padStart(2, '0')}`;
+        const dayOfWeek = new Date(year, month - 1, day).getDay();
+
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'day';
         button.textContent = day;
+
+        if (dayOfWeek === 0) button.classList.add('sun');
+        if (dayOfWeek === 6) button.classList.add('sat');
 
         if (state.selectedDates.some(item => item.work_date === date)) {
           button.classList.add('selected');
@@ -985,55 +878,49 @@ async function loadBootstrap() {
      ****************************************************/
 
 
-/****************************************************
- * submitCase ここから
- ****************************************************/
-async function submitCase() {
-  try {
-    clearMessage();
+    /****************************************************
+     * submitCase ここから
+     ****************************************************/
+    async function submitCase() {
+      try {
+        clearMessage();
 
-    const payload = buildPayload();
-    validatePayload(payload);
+        const payload = buildPayload();
+        validatePayload(payload);
 
-    const button = document.getElementById('submitButton');
-    button.disabled = true;
-    button.textContent = '登録中...';
+        const button = document.getElementById('submitButton');
+        button.disabled = true;
+        button.textContent = '登録中...';
 
-    const json = await fetchApiJson(null, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify({
-        action: 'createCase',
-        payload
-      })
-    });
+        showLoading('案件を登録中...');
 
-    if (!json.ok) {
-      throw new Error(json.message || '登録に失敗しました');
+        const json = await postCreateCase(payload);
+
+        if (!json.ok) {
+          throw new Error(json.message || '登録に失敗しました');
+        }
+
+        const createdCaseId = json.data.case_id;
+
+        clearFormAfterSubmit();
+
+        setMessage(`登録完了：${createdCaseId}　続けて登録できます。`, 'success');
+
+        scrollToPageTop();
+
+      } catch (error) {
+        setMessage(error.message, 'error');
+
+      } finally {
+        const button = document.getElementById('submitButton');
+        button.disabled = false;
+        button.textContent = '案件を登録する';
+        hideLoading();
+      }
     }
-
-    const createdCaseId = json.data.case_id;
-
-clearFormAfterSubmit();
-
-setMessage(`登録完了：${createdCaseId}　続けて登録できます。`, 'success');
-
-scrollToPageTop();
-    
-  } catch (error) {
-    setMessage(error.message, 'error');
-
-  } finally {
-    const button = document.getElementById('submitButton');
-    button.disabled = false;
-    button.textContent = '案件を登録する';
-  }
-}
-/****************************************************
- * submitCase ここまで
- ****************************************************/
+    /****************************************************
+     * submitCase ここまで
+     ****************************************************/
 
 
     /****************************************************
@@ -1112,6 +999,52 @@ scrollToPageTop();
 
 
     /****************************************************
+     * clearFormAfterSubmit ここから
+     * 登録成功後にフォームを初期状態へ戻す
+     * 対象月・案件種別・入力方式は維持する
+     ****************************************************/
+    function clearFormAfterSubmit() {
+      document.getElementById('agencyName').value = '';
+      document.getElementById('storeName').value = '';
+      document.getElementById('replyDeadline').value = '';
+
+      document.getElementById('workLocation').value = '';
+      document.getElementById('workStartTime').value = '';
+      document.getElementById('workEndTime').value = '';
+      document.getElementById('meetingTime').value = '';
+      document.getElementById('meetingPlace').value = '';
+
+      document.getElementById('requiredLines').value = 1;
+      document.getElementById('peoplePerLine').value = 1;
+      document.getElementById('requiredPeople').value = 1;
+
+      document.getElementById('requestedDays').value = '';
+
+      document.getElementById('amount').value = '';
+      document.getElementById('amountType').value = '';
+      document.getElementById('taxType').value = '';
+      document.getElementById('amountMemo').value = '';
+
+      document.getElementById('clientMemo').value = '';
+      document.getElementById('internalMemo').value = '';
+      document.getElementById('operationMemo').value = '';
+
+      document.getElementById('requiredSkill').value = 'any';
+
+      state.selectedDates = [];
+
+      applyCaseTypeRule();
+      renderCalendar();
+      updateRequiredPeople();
+      updateInputModeView();
+      updateSummary();
+    }
+    /****************************************************
+     * clearFormAfterSubmit ここまで
+     ****************************************************/
+
+
+    /****************************************************
      * updateSummary ここから
      ****************************************************/
     function updateSummary() {
@@ -1125,10 +1058,10 @@ scrollToPageTop();
         : `希望日数：${document.getElementById('requestedDays').value || '-'}日`;
 
       document.getElementById('summaryBox').innerHTML = `
-  入力方式：${mode === 'dates' ? '日付指定' : '日数指定'}<br>
-  ${dateText}<br>
-  必要数：${lines}枠 × ${ppl}人 = ${people}人
-`;
+        入力方式：${mode === 'dates' ? '日付指定' : '日数指定'}<br>
+        ${dateText}<br>
+        必要数：${lines}枠 × ${ppl}人 = ${people}人
+      `;
     }
     /****************************************************
      * updateSummary ここまで
@@ -1160,130 +1093,18 @@ scrollToPageTop();
       setMessage('', '');
     }
 
-    function todayString() {
-      const d = new Date();
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
+    function scrollToPageTop() {
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'smooth'
+        });
+
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }, 100);
     }
-
-    function escapeHtml(text) {
-      return String(text || '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
-    function buildApiUrl(action) {
-  const base = window.ORDERCASE_API_URL;
-
-  if (!base || !base.startsWith('https://')) {
-    throw new Error('API URLが不正です: ' + base);
-  }
-
-  const url = new URL(base);
-  url.searchParams.set('action', action);
-  return url.toString();
-}
-
-async function fetchApiJson(action, options = {}) {
-  const url = action ? buildApiUrl(action) : window.ORDERCASE_API_URL;
-
-  console.log('OrderCase API URL:', url);
-
-  const res = await fetch(url, options);
-  const text = await res.text();
-
-  console.log('OrderCase API status:', res.status);
-  console.log('OrderCase API response head:', text.slice(0, 300));
-
-  let json;
-
-  try {
-    json = JSON.parse(text);
-  } catch (error) {
-    throw new Error(
-      'APIの返答がJSONではありません。実際のURL: ' +
-      url +
-      ' / 返答先頭: ' +
-      text.slice(0, 120)
-    );
-  }
-
-  return json;
-}
-
-    /****************************************************
- * clearFormAfterSubmit ここから
- * 登録成功後にフォームを初期状態へ戻す
- * 対象月・案件種別・入力方式は連続登録しやすいように維持する
- ****************************************************/
-
-  /****************************************************
- * scrollToPageTop ここから
- * 登録成功後に画面上部へ戻す
- ****************************************************/
-function scrollToPageTop() {
-  setTimeout(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'smooth'
-    });
-
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  }, 100);
-}
-/****************************************************
- * scrollToPageTop ここまで
- ****************************************************/
-function clearFormAfterSubmit() {
-  // 対象月 targetMonth は維持
-  // 案件種別 caseType は維持
-  // 入力方式 inputMode は維持
-
-  document.getElementById('agencyName').value = '';
-  document.getElementById('storeName').value = '';
-  document.getElementById('replyDeadline').value = '';
-
-  document.getElementById('workLocation').value = '';
-  document.getElementById('workStartTime').value = '';
-  document.getElementById('workEndTime').value = '';
-  document.getElementById('meetingTime').value = '';
-  document.getElementById('meetingPlace').value = '';
-
-  document.getElementById('requiredLines').value = 1;
-  document.getElementById('peoplePerLine').value = 1;
-  document.getElementById('requiredPeople').value = 1;
-
-  document.getElementById('requestedDays').value = '';
-
-  document.getElementById('amount').value = '';
-  document.getElementById('amountType').value = '';
-  document.getElementById('taxType').value = '';
-  document.getElementById('amountMemo').value = '';
-
-  document.getElementById('clientMemo').value = '';
-  document.getElementById('internalMemo').value = '';
-  document.getElementById('operationMemo').value = '';
-
-  document.getElementById('requiredSkill').value = 'any';
-
-  state.selectedDates = [];
-
-  applyCaseTypeRule();
-  renderCalendar();
-  updateRequiredPeople();
-  updateInputModeView();
-  updateSummary();
-}
-/****************************************************
- * clearFormAfterSubmit ここまで
- ****************************************************/
     /****************************************************
      * 小物関数 ここまで
      ****************************************************/
