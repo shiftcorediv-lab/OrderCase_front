@@ -454,6 +454,7 @@
 
       const caseTypeName = getCaseTypeName(item.case_type);
       const statusName = getStatusName(item.status);
+      const scheduleText = getScheduleText(item);
 
       card.innerHTML = `
         <div class="case-head">
@@ -465,8 +466,10 @@
         </div>
 
         <div class="meta">
+          <div class="meta">
           <div><strong>対象月：</strong>${escapeHtml(item.target_month || '-')}</div>
           <div><strong>入力方式：</strong>${item.input_mode === 'days' ? '日数指定' : '日付指定'}</div>
+          <div><strong>日付/日数：</strong>${escapeHtml(scheduleText)}</div>
 
           <div><strong>代理店：</strong>${escapeHtml(item.agency_name || '-')}</div>
           <div><strong>連携店舗エリア：</strong>${escapeHtml(item.store_area || '-')}</div>
@@ -509,6 +512,37 @@
      * renderMemo ここまで
      ****************************************************/
 
+    /****************************************************
+ * getScheduleText ここから
+ * 一覧表示用に日付指定 / 日数指定の内容を整形
+ ****************************************************/
+function getScheduleText(item) {
+  if (item.input_mode === 'days') {
+    return item.requested_days
+      ? `${item.requested_days}日分`
+      : '-';
+  }
+
+  if (item.input_mode === 'dates') {
+    const dates = Array.isArray(item.case_dates) ? item.case_dates : [];
+
+    if (dates.length === 0) {
+      return '-';
+    }
+
+    return dates
+      .map(date => {
+        const people = date.required_people ? ` / ${date.required_people}人` : '';
+        return `${date.work_date}${people}`;
+      })
+      .join('、');
+  }
+
+  return '-';
+}
+/****************************************************
+ * getScheduleText ここまで
+ ****************************************************/
 
     /****************************************************
      * 表示名変換 ここから
