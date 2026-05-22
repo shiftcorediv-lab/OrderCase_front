@@ -5,75 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OrderCase 案件一覧</title>
 
+  <link rel="stylesheet" href="./css/common.css" />
+
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f6f8;
-      color: #222;
-    }
-
-    header {
-      background: #202124;
-      color: white;
-      padding: 18px 16px;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-    }
-
-    header p {
-      margin: 6px 0 0;
-      font-size: 13px;
-      color: #cfd3d7;
-    }
-
-    main {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
-    .top-nav {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    .nav-link {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      color: #cfd3d7;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 800;
-      border: 1px solid rgba(255,255,255,0.25);
-    }
-
-    .nav-link.active {
-      background: white;
-      color: #202124;
-    }
-
-    .nav-link:hover {
-      text-decoration: none;
-      background: rgba(255,255,255,0.14);
-    }
-
+    /****************************************************
+     * cases.html 専用スタイル
+     ****************************************************/
     .toolbar {
-      background: white;
-      border-radius: 18px;
-      padding: 14px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
       display: grid;
       gap: 10px;
     }
@@ -85,213 +23,13 @@
       }
     }
 
-    label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: #344054;
-    }
-
-    input,
-    select {
-      width: 100%;
-      border: 1px solid #d0d5dd;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 14px;
-      background: white;
-    }
-
-    button {
-      border: none;
-      border-radius: 12px;
-      padding: 11px 14px;
-      font-weight: 800;
-      background: #202124;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .message {
-      font-size: 13px;
-      color: #667085;
-      margin-bottom: 12px;
-    }
-
-    .error {
-      color: #b42318;
-      font-weight: 700;
-    }
-
     .case-list {
       display: grid;
       gap: 12px;
     }
 
-    .case-card {
-      background: white;
-      border-radius: 18px;
-      padding: 16px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-      border: 1px solid #edf0f3;
-    }
-
-    .case-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .case-id {
-      font-weight: 900;
-      font-size: 15px;
-    }
-
-    .case-title {
-      font-size: 16px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-
-    .status {
-      font-size: 12px;
-      font-weight: 800;
-      padding: 5px 9px;
-      border-radius: 999px;
-      background: #eef2ff;
-      color: #3538cd;
-      white-space: nowrap;
-    }
-
-    .status.checking {
-      background: #fff6ed;
-      color: #c4320a;
-    }
-
-    .status.confirmed {
-      background: #ecfdf3;
-      color: #027a48;
-    }
-
-    .status.cancelled {
-      background: #fef3f2;
-      color: #b42318;
-    }
-
-    .status.archived {
-      background: #f2f4f7;
-      color: #475467;
-    }
-
-    .meta {
-      display: grid;
-      gap: 6px;
-      font-size: 13px;
-      color: #475467;
-      line-height: 1.5;
-    }
-
-    @media (min-width: 720px) {
-      .meta {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    .memo {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #edf0f3;
-      font-size: 13px;
-      color: #475467;
-      white-space: pre-wrap;
-    }
-
     .card-actions {
-      display: flex;
       justify-content: flex-end;
-      gap: 10px;
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid #edf0f3;
-      flex-wrap: wrap;
-    }
-
-    .detail-link {
-      display: inline-block;
-      border-radius: 12px;
-      padding: 10px 13px;
-      font-size: 13px;
-      font-weight: 900;
-      background: #202124;
-      color: white;
-      text-decoration: none;
-    }
-
-    .detail-link:hover {
-      opacity: 0.88;
-    }
-
-    .empty {
-      background: white;
-      border-radius: 18px;
-      padding: 24px;
-      text-align: center;
-      color: #667085;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-    }
-
-    .loading-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.78);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      backdrop-filter: blur(5px);
-    }
-
-    .loading-overlay.show {
-      display: flex;
-    }
-
-    .loading-box {
-      background: white;
-      border-radius: 18px;
-      padding: 22px 24px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.14);
-      text-align: center;
-      min-width: 220px;
-    }
-
-    .spinner {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      border: 4px solid #e4e7ec;
-      border-top-color: #202124;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 12px;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .loading-text {
-      font-size: 14px;
-      font-weight: 800;
-      color: #344054;
     }
   </style>
 </head>
@@ -304,15 +42,7 @@
     </div>
   </div>
 
-  <header>
-    <h1>OrderCase</h1>
-    <p>案件一覧</p>
-
-    <nav class="top-nav">
-      <a class="nav-link" href="./index.html">案件登録</a>
-      <a class="nav-link active" href="./cases.html">案件一覧</a>
-    </nav>
-  </header>
+  <header id="ordercaseHeader"></header>
 
   <main>
     <div class="toolbar">
@@ -352,23 +82,19 @@
     <div class="case-list" id="caseList"></div>
   </main>
 
+  <script src="./js/config.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/loading.js"></script>
+  <script src="./js/navigation.js"></script>
+
   <script>
-    /****************************************************
-     * 設定 ここから
-     ****************************************************/
-    window.ORDERCASE_API_URL = 'https://ordercaseapiproxyworker.shiftcore-div.workers.dev';
-    /****************************************************
-     * 設定 ここまで
-     ****************************************************/
-
-
     /****************************************************
      * 状態 ここから
      ****************************************************/
     const state = {
       cases: [],
-      caseTypes: [],
-      settings: {}
+      caseTypes: []
     };
 
     let searchTimer = null;
@@ -382,6 +108,7 @@
      ****************************************************/
     document.addEventListener('DOMContentLoaded', async () => {
       try {
+        renderOrderCaseHeader('cases', '案件一覧');
         setupEventListeners();
         await loadListPageData();
 
@@ -479,9 +206,7 @@
       const list = document.getElementById('caseList');
       list.innerHTML = '';
 
-      const filtered = state.cases;
-
-      if (filtered.length === 0) {
+      if (state.cases.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'empty';
         empty.textContent = '該当する案件はありません。';
@@ -489,7 +214,7 @@
         return;
       }
 
-      filtered.forEach(item => {
+      state.cases.forEach(item => {
         list.appendChild(createCaseCard(item));
       });
     }
@@ -505,7 +230,7 @@
       const card = document.createElement('article');
       card.className = 'case-card';
 
-      const caseTypeName = getCaseTypeName(item.case_type);
+      const caseTypeName = getCaseTypeName(item.case_type, state.caseTypes);
       const statusName = getStatusName(item.status);
       const scheduleText = getScheduleText(item);
       const detailUrl = `./case.html?case_id=${encodeURIComponent(item.case_id)}`;
@@ -561,7 +286,9 @@
       if (item.internal_memo) memos.push('社内メモ：' + item.internal_memo);
       if (item.operation_memo) memos.push('運用メモ：' + item.operation_memo);
 
-      if (memos.length === 0) return '';
+      if (memos.length === 0) {
+        return '';
+      }
 
       return `<div class="memo">${escapeHtml(memos.join('\n'))}</div>`;
     }
@@ -571,64 +298,7 @@
 
 
     /****************************************************
-     * getScheduleText ここから
-     * 一覧表示用に日付指定 / 日数指定の内容を整形
-     ****************************************************/
-    function getScheduleText(item) {
-      if (item.input_mode === 'days') {
-        return item.requested_days
-          ? `${item.requested_days}日分`
-          : '-';
-      }
-
-      if (item.input_mode === 'dates') {
-        const dates = Array.isArray(item.case_dates) ? item.case_dates : [];
-
-        if (dates.length === 0) {
-          return '-';
-        }
-
-        return dates
-          .map(date => {
-            const people = date.required_people ? ` / ${date.required_people}人` : '';
-            return `${date.work_date}${people}`;
-          })
-          .join('、');
-      }
-
-      return '-';
-    }
-    /****************************************************
-     * getScheduleText ここまで
-     ****************************************************/
-
-
-    /****************************************************
-     * 表示名変換 ここから
-     ****************************************************/
-    function getCaseTypeName(value) {
-      const found = state.caseTypes.find(type => type.case_type_id === value);
-      return found ? found.case_type_name : value;
-    }
-
-    function getStatusName(value) {
-      const map = {
-        received: '受付済み',
-        checking: '確認中',
-        confirmed: '確定',
-        cancelled: 'キャンセル',
-        archived: 'アーカイブ'
-      };
-
-      return map[value] || value || '-';
-    }
-    /****************************************************
-     * 表示名変換 ここまで
-     ****************************************************/
-
-
-    /****************************************************
-     * API共通 ここから
+     * API・検索条件 ここから
      ****************************************************/
     function getListFilters() {
       return {
@@ -639,59 +309,15 @@
       };
     }
 
-    function buildApiUrlWithParams(action, params) {
-      const base = window.ORDERCASE_API_URL;
+    function debounceLoadListPageData() {
+      clearTimeout(searchTimer);
 
-      if (!base || !base.startsWith('https://')) {
-        throw new Error('API URLが不正です: ' + base);
-      }
-
-      const url = new URL(base);
-      url.searchParams.set('action', action);
-
-      Object.keys(params || {}).forEach(key => {
-        if (params[key]) {
-          url.searchParams.set(key, params[key]);
-        }
-      });
-
-      return url.toString();
-    }
-
-    async function fetchApiJsonWithParams(action, params, options = {}) {
-      const url = buildApiUrlWithParams(action, params);
-
-      const res = await fetch(url, options);
-      const text = await res.text();
-
-      let json;
-
-      try {
-        json = JSON.parse(text);
-      } catch (error) {
-        throw new Error('APIの返答がJSONではありません: ' + text.slice(0, 120));
-      }
-
-      return json;
+      searchTimer = setTimeout(() => {
+        loadListPageData();
+      }, 500);
     }
     /****************************************************
-     * API共通 ここまで
-     ****************************************************/
-
-
-    /****************************************************
-     * ローディング ここから
-     ****************************************************/
-    function showLoading(text) {
-      document.getElementById('loadingText').textContent = text || '読み込み中...';
-      document.getElementById('loadingOverlay').classList.add('show');
-    }
-
-    function hideLoading() {
-      document.getElementById('loadingOverlay').classList.remove('show');
-    }
-    /****************************************************
-     * ローディング ここまで
+     * API・検索条件 ここまで
      ****************************************************/
 
 
@@ -702,23 +328,6 @@
       const box = document.getElementById('messageBox');
       box.textContent = text;
       box.className = `message ${type || ''}`;
-    }
-
-    function debounceLoadListPageData() {
-      clearTimeout(searchTimer);
-
-      searchTimer = setTimeout(() => {
-        loadListPageData();
-      }, 500);
-    }
-
-    function escapeHtml(text) {
-      return String(text ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
     }
     /****************************************************
      * 小物関数 ここまで
