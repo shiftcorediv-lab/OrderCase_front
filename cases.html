@@ -78,9 +78,9 @@
       gap: 10px;
     }
 
-    @media (min-width: 720px) {
+    @media (min-width: 860px) {
       .toolbar {
-        grid-template-columns: 1fr 180px 180px auto;
+        grid-template-columns: 1fr 150px 150px 150px auto;
         align-items: end;
       }
     }
@@ -222,10 +222,63 @@
       color: #667085;
       box-shadow: 0 4px 14px rgba(0,0,0,0.06);
     }
+
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.78);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(5px);
+    }
+
+    .loading-overlay.show {
+      display: flex;
+    }
+
+    .loading-box {
+      background: white;
+      border-radius: 18px;
+      padding: 22px 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.14);
+      text-align: center;
+      min-width: 220px;
+    }
+
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 4px solid #e4e7ec;
+      border-top-color: #202124;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      font-size: 14px;
+      font-weight: 800;
+      color: #344054;
+    }
   </style>
 </head>
 
 <body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">読み込み中...</div>
+    </div>
+  </div>
+
   <header>
     <h1>OrderCase</h1>
     <p>案件一覧</p>
@@ -241,6 +294,11 @@
       <div>
         <label for="keyword">キーワード</label>
         <input id="keyword" placeholder="案件ID・代理店・店舗・場所で検索" />
+      </div>
+
+      <div>
+        <label for="targetMonthFilter">対象月</label>
+        <input id="targetMonthFilter" type="month" />
       </div>
 
       <div>
@@ -287,6 +345,8 @@
       caseTypes: [],
       settings: {}
     };
+
+    let searchTimer = null;
     /****************************************************
      * 状態 ここまで
      ****************************************************/
@@ -315,9 +375,11 @@
      ****************************************************/
     function setupEventListeners() {
       document.getElementById('reloadButton').addEventListener('click', loadListPageData);
-      document.getElementById('keyword').addEventListener('input', renderCases);
-      document.getElementById('statusFilter').addEventListener('change', renderCases);
-      document.getElementById('caseTypeFilter').addEventListener('change', renderCases);
+
+      document.getElementById('keyword').addEventListener('input', debounceLoadListPageData);
+      document.getElementById('targetMonthFilter').addEventListener('change', loadListPageData);
+      document.getElementById('statusFilter').addEventListener('change', loadListPageData);
+      document.getElementById('caseTypeFilter').addEventListener('change', loadListPageData);
     }
     /****************************************************
      * setupEventListeners ここまで
@@ -330,13 +392,14 @@
      ****************************************************/
     async function loadListPageData() {
       setMessage('案件一覧を読み込み中...', '');
+      showLoading('案件一覧を読み込み中...');
 
       const button = document.getElementById('reloadButton');
       button.disabled = true;
       button.textContent = '読込中...';
 
       try {
-        const json = await fetchApiJson('listPageData');
+        const json = await fetchApiJsonWithParams('listPageData', getListFilters());
 
         if (!json.ok) {
           throw new Error(json.message || '一覧データ取得に失敗しました');
@@ -353,6 +416,7 @@
       } finally {
         button.disabled = false;
         button.textContent = '再読み込み';
+        hideLoading();
       }
     }
     /****************************************************
@@ -390,7 +454,7 @@
       const list = document.getElementById('caseList');
       list.innerHTML = '';
 
-      const filtered = getFilteredCases();
+      const filtered = state.cases;
 
       if (filtered.length === 0) {
         const empty = document.createElement('div');
@@ -406,48 +470,6 @@
     }
     /****************************************************
      * renderCases ここまで
-     ****************************************************/
-
-
-    /****************************************************
-     * getFilteredCases ここから
-     ****************************************************/
-    function getFilteredCases() {
-      const keyword = document.getElementById('keyword').value.trim().toLowerCase();
-      const status = document.getElementById('statusFilter').value;
-      const caseType = document.getElementById('caseTypeFilter').value;
-
-      return state.cases
-        .filter(item => {
-          if (status && item.status !== status) return false;
-          if (caseType && item.case_type !== caseType) return false;
-
-          if (!keyword) return true;
-
-          const target = [
-            item.case_id,
-            item.target_month,
-            item.agency_name,
-            item.store_name,
-            item.store_area,
-            item.work_location,
-            item.work_area,
-            item.client_memo,
-            item.internal_memo,
-            item.operation_memo,
-            getScheduleText(item)
-          ].join(' ').toLowerCase();
-
-          return target.includes(keyword);
-        })
-        .sort((a, b) => {
-          const aDate = String(a.created_at || '');
-          const bDate = String(b.created_at || '');
-          return bDate.localeCompare(aDate);
-        });
-    }
-    /****************************************************
-     * getFilteredCases ここまで
      ****************************************************/
 
 
@@ -578,7 +600,16 @@
     /****************************************************
      * API共通 ここから
      ****************************************************/
-    function buildApiUrl(action) {
+    function getListFilters() {
+      return {
+        keyword: document.getElementById('keyword').value.trim(),
+        target_month: document.getElementById('targetMonthFilter').value,
+        status: document.getElementById('statusFilter').value,
+        case_type: document.getElementById('caseTypeFilter').value
+      };
+    }
+
+    function buildApiUrlWithParams(action, params) {
       const base = window.ORDERCASE_API_URL;
 
       if (!base || !base.startsWith('https://')) {
@@ -587,11 +618,18 @@
 
       const url = new URL(base);
       url.searchParams.set('action', action);
+
+      Object.keys(params || {}).forEach(key => {
+        if (params[key]) {
+          url.searchParams.set(key, params[key]);
+        }
+      });
+
       return url.toString();
     }
 
-    async function fetchApiJson(action, options = {}) {
-      const url = action ? buildApiUrl(action) : window.ORDERCASE_API_URL;
+    async function fetchApiJsonWithParams(action, params, options = {}) {
+      const url = buildApiUrlWithParams(action, params);
 
       const res = await fetch(url, options);
       const text = await res.text();
@@ -612,12 +650,36 @@
 
 
     /****************************************************
+     * ローディング ここから
+     ****************************************************/
+    function showLoading(text) {
+      document.getElementById('loadingText').textContent = text || '読み込み中...';
+      document.getElementById('loadingOverlay').classList.add('show');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('show');
+    }
+    /****************************************************
+     * ローディング ここまで
+     ****************************************************/
+
+
+    /****************************************************
      * 小物関数 ここから
      ****************************************************/
     function setMessage(text, type) {
       const box = document.getElementById('messageBox');
       box.textContent = text;
       box.className = `message ${type || ''}`;
+    }
+
+    function debounceLoadListPageData() {
+      clearTimeout(searchTimer);
+
+      searchTimer = setTimeout(() => {
+        loadListPageData();
+      }, 500);
     }
 
     function escapeHtml(text) {
