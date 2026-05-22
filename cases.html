@@ -8,337 +8,193 @@
   <link rel="stylesheet" href="./css/common.css" />
 
   <style>
-/****************************************************
- * cases.html 専用スタイル
- ****************************************************/
-.filter-panel {
-  margin-bottom: 12px;
-}
+    /****************************************************
+     * cases.html 専用スタイル
+     ****************************************************/
+    .filter-panel {
+      margin-bottom: 12px;
+    }
 
-.filter-toggle {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  background: #757575;
-  color: #fff;
-  border-radius: 14px;
-  padding: 11px 14px;
-  font-size: 14px;
-  font-weight: bold;
-}
+    .filter-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #757575;
+      color: #fff;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-weight: bold;
+    }
 
-.filter-toggle-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
+    .filter-toggle-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-.filter-toggle-icon {
-  font-size: 13px;
-  transition: transform .15s;
-}
+    .filter-toggle-icon {
+      font-size: 13px;
+      transition: transform .15s;
+    }
 
-.filter-panel.open .filter-toggle-icon {
-  transform: rotate(180deg);
-}
+    .filter-panel.open .filter-toggle-icon {
+      transform: rotate(180deg);
+    }
 
-.toolbar {
-  display: none;
-  gap: 10px;
-  margin-top: 10px;
-}
+    .toolbar {
+      display: none;
+      gap: 10px;
+      margin-top: 10px;
+    }
 
-.filter-panel.open .toolbar {
-  display: grid;
-}
+    .filter-panel.open .toolbar {
+      display: grid;
+    }
 
-@media (min-width: 860px) {
-  .filter-panel .toolbar {
-    display: grid;
-    grid-template-columns: 1fr 150px 150px 150px auto;
-    align-items: end;
-  }
+    @media (min-width: 860px) {
+      .filter-panel .toolbar {
+        display: grid;
+        grid-template-columns: 1fr 150px 150px 150px auto;
+        align-items: end;
+      }
 
-  .filter-toggle {
-    width: auto;
-    min-width: 180px;
-  }
-}
+      .filter-toggle {
+        width: auto;
+        min-width: 180px;
+      }
+    }
 
-.case-list {
-  display: grid;
-  gap: 10px;
-}
+    .case-list {
+      display: grid;
+      gap: 10px;
+    }
 
-.case-card {
-  padding: 14px 16px;
-  position: relative;
-  border-radius: 14px;
-}
+    .case-card {
+      padding: 14px 16px;
+      position: relative;
+      border-radius: 14px;
+    }
 
-.case-top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 10px;
-}
+    .case-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
 
-.created-at {
-  font-size: 11px;
-  color: #777;
-  font-weight: bold;
-  line-height: 1.5;
-}
+    .created-at {
+      font-size: 11px;
+      color: #777;
+      font-weight: bold;
+      line-height: 1.5;
+    }
 
-.case-main-row {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 10px;
-  align-items: center;
-}
+    .case-main-row {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
 
-@media (min-width: 980px) {
-  .case-main-row {
-    grid-template-columns: 0.9fr 1.8fr 100px 130px;
-  }
-}
+    @media (min-width: 980px) {
+      .case-main-row {
+        grid-template-columns: 0.9fr 1.8fr 100px 130px;
+      }
+    }
 
-@media (min-width: 720px) and (max-width: 979px) {
-  .case-main-row {
-    grid-template-columns: 1fr 1.5fr;
-  }
-}
+    @media (min-width: 720px) and (max-width: 979px) {
+      .case-main-row {
+        grid-template-columns: 1fr 1.5fr;
+      }
+    }
 
-.target-month-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-  line-height: 1.3;
-  word-break: keep-all;
-}
+    .target-month-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      line-height: 1.3;
+      word-break: keep-all;
+    }
 
-.case-main-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-  line-height: 1.3;
-  word-break: break-word;
-}
+    .case-main-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      line-height: 1.3;
+      word-break: break-word;
+    }
 
-.required-people-main {
-  font-size: 22px;
-  font-weight: bold;
-  color: #2e7d32;
-  line-height: 1.15;
-  white-space: nowrap;
-}
+    .required-people-main {
+      font-size: 22px;
+      font-weight: bold;
+      color: #2e7d32;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
 
-.required-people-main span {
-  font-size: 11px;
-  color: #666;
-  display: block;
-  margin-bottom: 2px;
-}
+    .required-people-main span {
+      font-size: 11px;
+      color: #666;
+      display: block;
+      margin-bottom: 2px;
+    }
 
-.detail-link {
-  display: inline-block;
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: bold;
-  background: #4caf50;
-  color: #fff;
-  text-decoration: none;
-  white-space: nowrap;
-}
+    .detail-link {
+      display: inline-block;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: bold;
+      background: #4caf50;
+      color: #fff;
+      text-decoration: none;
+      white-space: nowrap;
+    }
 
-.detail-link:hover {
-  opacity: .88;
-}
+    .detail-link:hover {
+      opacity: .88;
+    }
 
-.overview-meta {
-  display: grid;
-  gap: 6px;
-  font-size: 13px;
-  color: #555;
-  line-height: 1.5;
-  margin-top: 8px;
-}
+    .overview-line {
+      font-size: 12px;
+      color: #666;
+      font-weight: bold;
+      line-height: 1.6;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid #edf0f3;
+      word-break: break-word;
+    }
 
-@media (min-width: 720px) {
-  .overview-meta {
-    grid-template-columns: 1fr 1fr;
-  }
-}
+    .overview-line strong {
+      color: #444;
+    }
 
-.overview-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 8px 10px;
-}
+    .case-bottom-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 6px;
+    }
 
-.overview-label {
-  display: block;
-  font-size: 11px;
-  font-weight: bold;
-  color: #666;
-  margin-bottom: 2px;
-}
+    .case-id-small {
+      font-size: 10px;
+      color: #888;
+      font-weight: bold;
+      text-align: right;
+      word-break: break-all;
+    }
 
-.overview-value {
-  display: block;
-  font-size: 13px;
-  font-weight: bold;
-  color: #333;
-  word-break: break-word;
-}
-
-.case-bottom-row {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #edf0f3;
-}
-
-.case-id-small {
-  font-size: 10px;
-  color: #888;
-  font-weight: bold;
-  text-align: right;
-  word-break: break-all;
-}
-
-/****************************************************
- * スマホ表示調整
- ****************************************************/
-@media (max-width: 719px) {
-  main {
-    padding: 10px;
-  }
-
-  .message {
-    font-size: 12px;
-    margin-top: 8px;
-    margin-bottom: 8px;
-  }
-
-  .filter-panel {
-    margin-bottom: 10px;
-  }
-
-  .filter-toggle {
-    padding: 10px 12px;
-    font-size: 14px;
-    border-radius: 12px;
-  }
-
-  .toolbar {
-    gap: 8px;
-    margin-top: 8px;
-    padding: 12px;
-  }
-
-  .toolbar label {
-    font-size: 12px;
-    margin-bottom: 5px;
-  }
-
-  .toolbar input,
-  .toolbar select {
-    font-size: 14px;
-    padding: 10px 11px;
-  }
-
-  .toolbar button {
-    padding: 11px 12px;
-    font-size: 14px;
-  }
-
-  .case-list {
-    gap: 9px;
-  }
-
-  .case-card {
-    padding: 12px;
-    border-radius: 14px;
-  }
-
-  .case-top-row {
-    margin-bottom: 8px;
-  }
-
-  .created-at {
-    font-size: 10px;
-  }
-
-  .status {
-    font-size: 10px;
-    padding: 4px 8px;
-  }
-
-  .case-main-row {
-    grid-template-columns: 1fr;
-    gap: 5px;
-    margin-bottom: 8px;
-  }
-
-  .target-month-title {
-    font-size: 17px;
-  }
-
-  .case-main-title {
-    font-size: 18px;
-  }
-
-  .required-people-main {
-    font-size: 21px;
-  }
-
-  .required-people-main span {
-    font-size: 10px;
-  }
-
-  .detail-link {
-    width: 100%;
-    padding: 10px 12px;
-    font-size: 14px;
-  }
-
-  .overview-meta {
-    grid-template-columns: 1fr;
-    gap: 6px;
-    margin-top: 8px;
-  }
-
-  .overview-item {
-    padding: 8px 9px;
-  }
-
-  .overview-label {
-    font-size: 10px;
-  }
-
-  .overview-value {
-    font-size: 13px;
-  }
-
-  .case-bottom-row {
-    margin-top: 7px;
-    padding-top: 7px;
-  }
-
-  .case-id-small {
-    font-size: 10px;
-  }
-}    @media (max-width: 719px) {
+    /****************************************************
+     * スマホ表示調整
+     ****************************************************/
+    @media (max-width: 719px) {
       main {
         padding: 10px;
       }
@@ -356,6 +212,7 @@
       .filter-toggle {
         padding: 10px 12px;
         font-size: 14px;
+        border-radius: 12px;
       }
 
       .toolbar {
@@ -381,16 +238,16 @@
       }
 
       .case-list {
-        gap: 10px;
+        gap: 9px;
       }
 
       .case-card {
-        padding: 14px;
+        padding: 12px;
         border-radius: 14px;
       }
 
       .case-top-row {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
       }
 
       .created-at {
@@ -398,59 +255,46 @@
       }
 
       .status {
-        font-size: 11px;
-        padding: 5px 9px;
+        font-size: 10px;
+        padding: 4px 8px;
       }
 
       .case-main-row {
         grid-template-columns: 1fr;
-        gap: 7px;
-        margin-bottom: 10px;
+        gap: 5px;
+        margin-bottom: 6px;
       }
 
       .target-month-title {
-        font-size: 18px;
+        font-size: 17px;
       }
 
       .case-main-title {
-        font-size: 19px;
+        font-size: 18px;
       }
 
       .required-people-main {
-        font-size: 22px;
+        font-size: 21px;
       }
 
       .required-people-main span {
-        font-size: 11px;
+        font-size: 10px;
       }
 
       .detail-link {
         width: 100%;
-        padding: 11px 14px;
+        padding: 10px 12px;
         font-size: 14px;
       }
 
-      .overview-meta {
-        grid-template-columns: 1fr;
-        gap: 6px;
-        margin-top: 8px;
-      }
-
-      .overview-item {
-        padding: 9px 10px;
-      }
-
-      .overview-label {
+      .overview-line {
         font-size: 11px;
-      }
-
-      .overview-value {
-        font-size: 13px;
+        margin-top: 4px;
+        padding-top: 7px;
       }
 
       .case-bottom-row {
-        margin-top: 8px;
-        padding-top: 8px;
+        margin-top: 4px;
       }
 
       .case-id-small {
@@ -719,10 +563,7 @@
           <a class="detail-link" href="${detailUrl}">詳細を見る</a>
         </div>
 
-        <div class="overview-meta">
-          ${overviewItemHtml('代理店', item.agency_name || '-')}
-          ${renderWorkLocationOverview(item)}
-        </div>
+        ${renderOverviewLine(item)}
 
         <div class="case-bottom-row">
           <div class="case-id-small">${escapeHtml(item.case_id || '-')}</div>
@@ -737,34 +578,28 @@
 
 
     /****************************************************
-     * renderWorkLocationOverview ここから
-     * 店頭稼働では実稼働場所を一覧では省略
+     * renderOverviewLine ここから
+     * 代理店・実稼働場所を1行表示する
      ****************************************************/
-    function renderWorkLocationOverview(item) {
-      if (item.case_type === 'retail_store') {
+    function renderOverviewLine(item) {
+      const parts = [];
+
+      if (item.agency_name) {
+        parts.push(`<strong>代理店：</strong>${escapeHtml(item.agency_name)}`);
+      }
+
+      if (item.case_type !== 'retail_store' && item.work_location) {
+        parts.push(`<strong>実稼働場所：</strong>${escapeHtml(item.work_location)}`);
+      }
+
+      if (parts.length === 0) {
         return '';
       }
 
-      return overviewItemHtml('実稼働場所', item.work_location || '-');
+      return `<div class="overview-line">${parts.join('　/　')}</div>`;
     }
     /****************************************************
-     * renderWorkLocationOverview ここまで
-     ****************************************************/
-
-
-    /****************************************************
-     * overviewItemHtml ここから
-     ****************************************************/
-    function overviewItemHtml(label, value) {
-      return `
-        <div class="overview-item">
-          <span class="overview-label">${escapeHtml(label)}</span>
-          <span class="overview-value">${escapeHtml(displayValue(value))}</span>
-        </div>
-      `;
-    }
-    /****************************************************
-     * overviewItemHtml ここまで
+     * renderOverviewLine ここまで
      ****************************************************/
 
 
