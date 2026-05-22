@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OrderCase 案件詳細</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #202124;
+      color: white;
+      padding: 18px 16px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: #cfd3d7;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 16px;
+      padding-bottom: 40px;
+    }
+
+    .top-nav {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .nav-link {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: #cfd3d7;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    .nav-link.active {
+      background: white;
+      color: #202124;
+    }
+
+    .nav-link:hover {
+      text-decoration: none;
+      background: rgba(255,255,255,0.14);
+    }
+
+    .message {
+      font-size: 13px;
+      color: #667085;
+      margin-bottom: 12px;
+    }
+
+    .error {
+      color: #b42318;
+      font-weight: 700;
+    }
+
+    .detail-card {
+      background: white;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      border: 1px solid #edf0f3;
+    }
+
+    .detail-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .case-id {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .case-title {
+      font-size: 15px;
+      color: #475467;
+      font-weight: 700;
+    }
+
+    .status {
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3538cd;
+      white-space: nowrap;
+    }
+
+    .status.checking {
+      background: #fff6ed;
+      color: #c4320a;
+    }
+
+    .status.confirmed {
+      background: #ecfdf3;
+      color: #027a48;
+    }
+
+    .status.cancelled {
+      background: #fef3f2;
+      color: #b42318;
+    }
+
+    .status.archived {
+      background: #f2f4f7;
+      color: #475467;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 900;
+      margin: 0 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #edf0f3;
+    }
+
+    .grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    @media (min-width: 720px) {
+      .grid.two {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .grid.three {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+    }
+
+    .field {
+      background: #fafafa;
+      border: 1px solid #edf0f3;
+      border-radius: 14px;
+      padding: 12px;
+      min-height: 64px;
+    }
+
+    .label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #667085;
+      margin-bottom: 5px;
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: 700;
+      color: #222;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .memo-box {
+      background: #fafafa;
+      border: 1px solid #edf0f3;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #344054;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .date-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .date-item {
+      background: #fafafa;
+      border: 1px solid #edf0f3;
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      gap: 6px;
+    }
+
+    @media (min-width: 720px) {
+      .date-item {
+        grid-template-columns: 150px 1fr 1fr;
+        align-items: center;
+      }
+    }
+
+    .date-main {
+      font-weight: 900;
+    }
+
+    .date-sub {
+      font-size: 13px;
+      color: #475467;
+    }
+
+    .empty {
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+      color: #667085;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .button-link {
+      display: inline-block;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-weight: 800;
+      background: #202124;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .button-link.secondary {
+      background: white;
+      color: #202124;
+      border: 1px solid #d0d5dd;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.78);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(5px);
+    }
+
+    .loading-overlay.show {
+      display: flex;
+    }
+
+    .loading-box {
+      background: white;
+      border-radius: 18px;
+      padding: 22px 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.14);
+      text-align: center;
+      min-width: 220px;
+    }
+
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 4px solid #e4e7ec;
+      border-top-color: #202124;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      font-size: 14px;
+      font-weight: 800;
+      color: #344054;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loadingText">読み込み中...</div>
+    </div>
+  </div>
+
+  <header>
+    <h1>OrderCase</h1>
+    <p>案件詳細</p>
+
+    <nav class="top-nav">
+      <a class="nav-link" href="./index.html">案件登録</a>
+      <a class="nav-link" href="./cases.html">案件一覧</a>
+      <a class="nav-link active" href="./case.html">案件詳細</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="actions">
+      <a class="button-link secondary" href="./cases.html">案件一覧へ戻る</a>
+    </div>
+
+    <div class="message" id="messageBox">読み込み中...</div>
+    <div id="detailRoot"></div>
+  </main>
+
+  <script>
+    /****************************************************
+     * 設定 ここから
+     ****************************************************/
+    window.ORDERCASE_API_URL = 'https://ordercaseapiproxyworker.shiftcore-div.workers.dev';
+    /****************************************************
+     * 設定 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 状態 ここから
+     ****************************************************/
+    const state = {
+      caseDetail: null
+    };
+    /****************************************************
+     * 状態 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 初期化 ここから
+     ****************************************************/
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        await loadCaseDetail();
+
+      } catch (error) {
+        console.error(error);
+        setMessage('読み込みエラー: ' + error.message, 'error');
+        renderEmpty('案件詳細を表示できませんでした。');
+      }
+    });
+    /****************************************************
+     * 初期化 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * loadCaseDetail ここから
+     * URLの case_id を元に案件詳細を取得
+     ****************************************************/
+    async function loadCaseDetail() {
+      const caseId = getQueryParam('case_id');
+
+      if (!caseId) {
+        throw new Error('case_id がURLに指定されていません。');
+      }
+
+      setMessage('案件詳細を読み込み中...', '');
+      showLoading('案件詳細を読み込み中...');
+
+      try {
+        const json = await fetchApiJsonWithParams('getCaseDetail', {
+          case_id: caseId
+        });
+
+        if (!json.ok) {
+          throw new Error(json.message || '案件詳細の取得に失敗しました');
+        }
+
+        state.caseDetail = json.data;
+
+        renderCaseDetail();
+        setMessage('案件詳細を読み込みました', '');
+
+      } finally {
+        hideLoading();
+      }
+    }
+    /****************************************************
+     * loadCaseDetail ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * renderCaseDetail ここから
+     * 案件詳細を描画
+     ****************************************************/
+    function renderCaseDetail() {
+      const root = document.getElementById('detailRoot');
+      const item = state.caseDetail;
+
+      if (!item) {
+        renderEmpty('案件が見つかりません。');
+        return;
+      }
+
+      const statusName = getStatusName(item.status);
+      const caseTypeName = getCaseTypeName(item.case_type);
+      const scheduleText = getScheduleText(item);
+
+      root.innerHTML = `
+        <section class="detail-card">
+          <div class="detail-head">
+            <div>
+              <div class="case-id">${escapeHtml(item.case_id)}</div>
+              <div class="case-title">${escapeHtml(caseTypeName)} / ${escapeHtml(item.store_name || '-')}</div>
+            </div>
+            <div class="status ${escapeHtml(item.status || '')}">${escapeHtml(statusName)}</div>
+          </div>
+
+          <div class="grid three">
+            ${fieldHtml('対象月', item.target_month)}
+            ${fieldHtml('案件種別', caseTypeName)}
+            ${fieldHtml('ステータス', statusName)}
+            ${fieldHtml('入力方式', item.input_mode === 'days' ? '日数指定' : '日付指定')}
+            ${fieldHtml('日付/日数', scheduleText)}
+            ${fieldHtml('返答期限', item.reply_deadline)}
+          </div>
+        </section>
+
+        <section class="detail-card">
+          <h2 class="section-title">代理店・連携店舗</h2>
+          <div class="grid two">
+            ${fieldHtml('代理店', item.agency_name)}
+            ${fieldHtml('連携店舗', item.store_name)}
+            ${fieldHtml('連携店舗エリア', item.store_area)}
+            ${fieldHtml('代理店ID / 店舗ID', `${item.agency_id || '-'} / ${item.store_id || '-'}`)}
+          </div>
+        </section>
+
+        <section class="detail-card">
+          <h2 class="section-title">稼働条件</h2>
+          <div class="grid two">
+            ${fieldHtml('実稼働場所', item.work_location)}
+            ${fieldHtml('実稼働エリア', item.work_area)}
+            ${fieldHtml('稼働開始時間', item.work_start_time)}
+            ${fieldHtml('稼働終了時間', item.work_end_time)}
+            ${fieldHtml('集合時間', item.meeting_time)}
+            ${fieldHtml('集合場所', item.meeting_place)}
+            ${fieldHtml('必要スキル', getSkillName(item.required_skill))}
+          </div>
+        </section>
+
+        <section class="detail-card">
+          <h2 class="section-title">必要数</h2>
+          <div class="grid three">
+            ${fieldHtml('必要枠数', item.required_lines)}
+            ${fieldHtml('1枠あたり人数', item.people_per_line)}
+            ${fieldHtml('必要人数', item.required_people)}
+          </div>
+        </section>
+
+        <section class="detail-card">
+          <h2 class="section-title">日付明細</h2>
+          ${renderCaseDates(item)}
+        </section>
+
+        <section class="detail-card">
+          <h2 class="section-title">金額</h2>
+          <div class="grid two">
+            ${fieldHtml('金額', formatAmount(item.amount))}
+            ${fieldHtml('金額区分', getAmountTypeName(item.amount_type))}
+            ${fieldHtml('税区分', getTaxTypeName(item.tax_type))}
+            ${fieldHtml('金額メモ', item.amount_memo)}
+          </div>
+        </section>
+
+        <section class="detail-card">
+          <h2 class="section-title">メモ</h2>
+          <div class="grid">
+            ${memoHtml('先方メモ', item.client_memo)}
+            ${memoHtml('社内メモ', item.internal_memo)}
+            ${memoHtml('運用メモ', item.operation_memo)}
+          </div>
+        </section>
+
+        <section class="detail-card">
+          <h2 class="section-title">管理情報</h2>
+          <div class="grid two">
+            ${fieldHtml('ShiftBuilder対象', formatBoolean(item.for_shift_builder))}
+            ${fieldHtml('アーカイブ', formatBoolean(item.archived))}
+            ${fieldHtml('登録者', item.created_by)}
+            ${fieldHtml('登録日時', item.created_at)}
+            ${fieldHtml('更新者', item.updated_by)}
+            ${fieldHtml('更新日時', item.updated_at)}
+          </div>
+        </section>
+      `;
+    }
+    /****************************************************
+     * renderCaseDetail ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * renderCaseDates ここから
+     * 日付明細を表示
+     ****************************************************/
+    function renderCaseDates(item) {
+      if (item.input_mode === 'days') {
+        return `
+          <div class="grid two">
+            ${fieldHtml('希望日数', item.requested_days ? `${item.requested_days}日分` : '-')}
+            ${fieldHtml('割当状況', getAllocationStatusName(item.allocation_status))}
+          </div>
+        `;
+      }
+
+      const dates = Array.isArray(item.case_dates) ? item.case_dates : [];
+
+      if (dates.length === 0) {
+        return '<div class="empty">日付明細はありません。</div>';
+      }
+
+      const rows = dates.map(date => {
+        return `
+          <div class="date-item">
+            <div class="date-main">${escapeHtml(date.work_date || '-')}</div>
+            <div class="date-sub">必要枠数：${escapeHtml(date.required_lines || '-')} / 1枠あたり人数：${escapeHtml(date.people_per_line || '-')} / 必要人数：${escapeHtml(date.required_people || '-')}</div>
+            <div class="date-sub">メモ：${escapeHtml(date.memo || '-')}</div>
+          </div>
+        `;
+      }).join('');
+
+      return `<div class="date-list">${rows}</div>`;
+    }
+    /****************************************************
+     * renderCaseDates ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * HTML部品 ここから
+     ****************************************************/
+    function fieldHtml(label, value) {
+      return `
+        <div class="field">
+          <div class="label">${escapeHtml(label)}</div>
+          <div class="value">${escapeHtml(displayValue(value))}</div>
+        </div>
+      `;
+    }
+
+    function memoHtml(label, value) {
+      return `
+        <div>
+          <div class="label">${escapeHtml(label)}</div>
+          <div class="memo-box">${escapeHtml(displayValue(value))}</div>
+        </div>
+      `;
+    }
+
+    function renderEmpty(text) {
+      const root = document.getElementById('detailRoot');
+      root.innerHTML = `<div class="empty">${escapeHtml(text)}</div>`;
+    }
+    /****************************************************
+     * HTML部品 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 表示整形 ここから
+     ****************************************************/
+    function getScheduleText(item) {
+      if (item.input_mode === 'days') {
+        return item.requested_days
+          ? `${item.requested_days}日分`
+          : '-';
+      }
+
+      if (item.input_mode === 'dates') {
+        const dates = Array.isArray(item.case_dates) ? item.case_dates : [];
+
+        if (dates.length === 0) {
+          return '-';
+        }
+
+        return dates
+          .map(date => {
+            const people = date.required_people ? ` / ${date.required_people}人` : '';
+            return `${date.work_date}${people}`;
+          })
+          .join('、');
+      }
+
+      return '-';
+    }
+
+    function getCaseTypeName(value) {
+      const map = {
+        retail_store: '店頭稼働',
+        event_sales: '出張販売',
+        roadside: '軒先稼働',
+        event_support: 'イベント応援',
+        other: 'その他'
+      };
+
+      return map[value] || value || '-';
+    }
+
+    function getStatusName(value) {
+      const map = {
+        received: '受付済み',
+        checking: '確認中',
+        confirmed: '確定',
+        cancelled: 'キャンセル',
+        archived: 'アーカイブ'
+      };
+
+      return map[value] || value || '-';
+    }
+
+    function getSkillName(value) {
+      const map = {
+        any: '指定なし',
+        registration_only: '登録のみ',
+        multi_complete: 'マルチ完結',
+        leader: 'リーダー候補'
+      };
+
+      return map[value] || value || '-';
+    }
+
+    function getAmountTypeName(value) {
+      const map = {
+        per_day: '1日あたり',
+        per_person_day: '1人日あたり',
+        per_line_day: '1枠日あたり',
+        per_case: '案件一式',
+        monthly: '月額',
+        other: 'その他'
+      };
+
+      return map[value] || value || '-';
+    }
+
+    function getTaxTypeName(value) {
+      const map = {
+        tax_included: '税込',
+        tax_excluded: '税別',
+        unknown: '不明'
+      };
+
+      return map[value] || value || '-';
+    }
+
+    function getAllocationStatusName(value) {
+      const map = {
+        unallocated: '未割当',
+        partially_allocated: '一部割当済み',
+        allocated: '割当済み'
+      };
+
+      return map[value] || value || '-';
+    }
+
+    function formatAmount(value) {
+      if (value === '' || value === null || value === undefined) {
+        return '-';
+      }
+
+      const num = Number(value);
+
+      if (Number.isNaN(num)) {
+        return value;
+      }
+
+      return `${num.toLocaleString()}円`;
+    }
+
+    function formatBoolean(value) {
+      if (value === true || String(value).toUpperCase() === 'TRUE') {
+        return 'はい';
+      }
+
+      if (value === false || String(value).toUpperCase() === 'FALSE') {
+        return 'いいえ';
+      }
+
+      return '-';
+    }
+
+    function displayValue(value) {
+      if (value === '' || value === null || value === undefined) {
+        return '-';
+      }
+
+      return value;
+    }
+    /****************************************************
+     * 表示整形 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * API共通 ここから
+     ****************************************************/
+    function buildApiUrlWithParams(action, params) {
+      const base = window.ORDERCASE_API_URL;
+
+      if (!base || !base.startsWith('https://')) {
+        throw new Error('API URLが不正です: ' + base);
+      }
+
+      const url = new URL(base);
+      url.searchParams.set('action', action);
+
+      Object.keys(params || {}).forEach(key => {
+        if (params[key]) {
+          url.searchParams.set(key, params[key]);
+        }
+      });
+
+      return url.toString();
+    }
+
+    async function fetchApiJsonWithParams(action, params, options = {}) {
+      const url = buildApiUrlWithParams(action, params);
+
+      const res = await fetch(url, options);
+      const text = await res.text();
+
+      let json;
+
+      try {
+        json = JSON.parse(text);
+      } catch (error) {
+        throw new Error('APIの返答がJSONではありません: ' + text.slice(0, 120));
+      }
+
+      return json;
+    }
+    /****************************************************
+     * API共通 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * ローディング ここから
+     ****************************************************/
+    function showLoading(text) {
+      document.getElementById('loadingText').textContent = text || '読み込み中...';
+      document.getElementById('loadingOverlay').classList.add('show');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('show');
+    }
+    /****************************************************
+     * ローディング ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 小物関数 ここから
+     ****************************************************/
+    function getQueryParam(key) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(key);
+    }
+
+    function setMessage(text, type) {
+      const box = document.getElementById('messageBox');
+      box.textContent = text;
+      box.className = `message ${type || ''}`;
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+    /****************************************************
+     * 小物関数 ここまで
+     ****************************************************/
+  </script>
+</body>
+</html>
