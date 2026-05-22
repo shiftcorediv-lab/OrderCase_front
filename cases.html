@@ -52,12 +52,18 @@
       display: grid;
       gap: 14px;
       margin-bottom: 14px;
-      align-items: start;
+      align-items: center;
     }
 
-    @media (min-width: 860px) {
+    @media (min-width: 980px) {
       .case-main-row {
-        grid-template-columns: 1fr 1.7fr 170px;
+        grid-template-columns: 1fr 1.8fr 120px 160px;
+      }
+    }
+
+    @media (min-width: 720px) and (max-width: 979px) {
+      .case-main-row {
+        grid-template-columns: 1fr 1.5fr;
       }
     }
 
@@ -77,18 +83,6 @@
       word-break: break-word;
     }
 
-    .side-action-box {
-      display: grid;
-      gap: 10px;
-      justify-items: start;
-    }
-
-    @media (min-width: 860px) {
-      .side-action-box {
-        justify-items: stretch;
-      }
-    }
-
     .required-people-main {
       font-size: 28px;
       font-weight: bold;
@@ -106,7 +100,7 @@
 
     .detail-link {
       display: inline-block;
-      min-width: 120px;
+      width: 100%;
       padding: 12px 16px;
       border-radius: 14px;
       text-align: center;
@@ -115,6 +109,7 @@
       background: #4caf50;
       color: #fff;
       text-decoration: none;
+      white-space: nowrap;
     }
 
     .detail-link:hover {
@@ -176,35 +171,25 @@
       word-break: break-all;
     }
 
-    @media (max-width: 859px) {
+    @media (max-width: 979px) {
+      .detail-link {
+        width: auto;
+        min-width: 140px;
+      }
+    }
+
+    @media (max-width: 719px) {
       .case-main-row {
         grid-template-columns: 1fr;
       }
 
       .target-month-title,
       .case-main-title {
-        font-size: 22px;
+        font-size: 21px;
       }
 
       .required-people-main {
         font-size: 24px;
-      }
-
-      .side-action-box {
-        grid-template-columns: 1fr auto;
-        align-items: end;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .target-month-title,
-      .case-main-title {
-        font-size: 20px;
-      }
-
-      .side-action-box {
-        grid-template-columns: 1fr;
-        align-items: stretch;
       }
 
       .detail-link {
@@ -428,13 +413,12 @@
             ${escapeHtml(caseTypeName)} / ${escapeHtml(item.store_name || '-')}
           </div>
 
-          <div class="side-action-box">
-            <div class="required-people-main">
-              <span>必要人数</span>
-              ${escapeHtml(formatRequiredPeople(item.required_people))}
-            </div>
-            <a class="detail-link" href="${detailUrl}">詳細を見る</a>
+          <div class="required-people-main">
+            <span>必要人数</span>
+            ${escapeHtml(formatRequiredPeople(item.required_people))}
           </div>
+
+          <a class="detail-link" href="${detailUrl}">詳細を見る</a>
         </div>
 
         <div class="overview-meta">
