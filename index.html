@@ -985,62 +985,53 @@ async function loadBootstrap() {
      ****************************************************/
 
 
-    /****************************************************
-     * submitCase ここから
-     ****************************************************/
-    async function submitCase() {
-      try {
-        clearMessage();
-        const payload = buildPayload();
-        validatePayload(payload);
+/****************************************************
+ * submitCase ここから
+ ****************************************************/
+async function submitCase() {
+  try {
+    clearMessage();
 
-        const button = document.getElementById('submitButton');
-        button.disabled = true;
-        button.textContent = '登録中...';
+    const payload = buildPayload();
+    validatePayload(payload);
 
-        const json = await fetchApiJson(null, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'text/plain;charset=utf-8'
-  },
-  body: JSON.stringify({
-    action: 'createCase',
-    payload
-  })
-});
+    const button = document.getElementById('submitButton');
+    button.disabled = true;
+    button.textContent = '登録中...';
 
-        if (!json.ok) {
-          throw new Error(json.message || '登録に失敗しました');
-        }
+    const json = await fetchApiJson(null, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'createCase',
+        payload
+      })
+    });
 
-        const createdCaseId = json.data.case_id;
-
-        clearFormAfterSubmit();
-
-        setMessage(`登録完了：${createdCaseId}　続けて登録できます。`, 'success');
-
-      } catch (error) {
-        setMessage(error.message, 'error');
-      } finally {
-        const button = document.getElementById('submitButton');
-        button.disabled = false;
-        button.textContent = '案件を登録する';
-      }
+    if (!json.ok) {
+      throw new Error(json.message || '登録に失敗しました');
     }
-      applyCaseTypeRule();
-      renderCalendar();
-      updateRequiredPeople();
-      updateInputModeView();
-      updateSummary();
 
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-  });
+    const createdCaseId = json.data.case_id;
+
+    clearFormAfterSubmit();
+
+    setMessage(`登録完了：${createdCaseId}　続けて登録できます。`, 'success');
+
+  } catch (error) {
+    setMessage(error.message, 'error');
+
+  } finally {
+    const button = document.getElementById('submitButton');
+    button.disabled = false;
+    button.textContent = '案件を登録する';
+  }
 }
-    /****************************************************
-     * submitCase ここまで
-     ****************************************************/
+/****************************************************
+ * submitCase ここまで
+ ****************************************************/
 
 
     /****************************************************
