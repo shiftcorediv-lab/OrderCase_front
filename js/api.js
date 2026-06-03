@@ -31,10 +31,26 @@ function buildApiUrlWithParams(action, params) {
 
 
 /****************************************************
+ * buildParamsWithAuth_ ここから
+ ****************************************************/
+async function buildParamsWithAuth_(params) {
+  const idToken = await getOrderCaseIdToken();
+
+  return Object.assign({}, params || {}, {
+    idToken: idToken
+  });
+}
+/****************************************************
+ * buildParamsWithAuth_ ここまで
+ ****************************************************/
+
+
+/****************************************************
  * fetchApiJsonWithParams ここから
  ****************************************************/
 async function fetchApiJsonWithParams(action, params, options = {}) {
-  const url = buildApiUrlWithParams(action, params);
+  const paramsWithAuth = await buildParamsWithAuth_(params);
+  const url = buildApiUrlWithParams(action, paramsWithAuth);
 
   const res = await fetch(url, options);
   const text = await res.text();
@@ -70,6 +86,7 @@ async function fetchApiJson(action, options = {}) {
  ****************************************************/
 async function postCreateCase(payload) {
   const base = window.ORDERCASE_CONFIG.API_URL;
+  const idToken = await getOrderCaseIdToken();
 
   const res = await fetch(base, {
     method: 'POST',
@@ -78,6 +95,7 @@ async function postCreateCase(payload) {
     },
     body: JSON.stringify({
       action: 'createCase',
+      idToken: idToken,
       payload: payload
     })
   });
@@ -98,6 +116,7 @@ async function postCreateCase(payload) {
  * postCreateCase ここまで
  ****************************************************/
 
+
 /****************************************************
  * postUpdateCase ここから
  ****************************************************/
@@ -108,6 +127,8 @@ async function postUpdateCase(payload) {
     throw new Error('API URLが不正です: ' + base);
   }
 
+  const idToken = await getOrderCaseIdToken();
+
   const res = await fetch(base, {
     method: 'POST',
     headers: {
@@ -115,6 +136,7 @@ async function postUpdateCase(payload) {
     },
     body: JSON.stringify({
       action: 'updateCase',
+      idToken: idToken,
       payload: payload
     })
   });
