@@ -195,7 +195,6 @@
 
     /****************************************************
      * setupEditLink ここから
-     * URLの case_id を編集画面へのリンクにも引き継ぐ
      ****************************************************/
     function setupEditLink() {
       const caseId = getQueryParam('case_id');
@@ -219,7 +218,6 @@
 
     /****************************************************
      * loadCaseDetail ここから
-     * URLの case_id を元に案件詳細と変更履歴を取得
      ****************************************************/
     async function loadCaseDetail() {
       const caseId = getQueryParam('case_id');
@@ -267,7 +265,6 @@
 
     /****************************************************
      * renderCaseDetail ここから
-     * 案件詳細を描画
      ****************************************************/
     function renderCaseDetail() {
       const root = document.getElementById('detailRoot');
@@ -281,6 +278,7 @@
       const statusName = getStatusName(item.status);
       const caseTypeName = getCaseTypeName(item.case_type);
       const scheduleText = getScheduleText(item);
+      const billingUnits = calculateBillingUnits(item);
 
       root.innerHTML = `
         <section class="detail-card">
@@ -331,6 +329,7 @@
             ${fieldHtml('必要枠数', item.required_lines)}
             ${fieldHtml('1枠あたり人数', item.people_per_line)}
             ${fieldHtml('必要人数', item.required_people)}
+            ${fieldHtml('請求コマ数', formatBillingUnits(billingUnits))}
           </div>
         </section>
 
@@ -366,8 +365,8 @@
             ${fieldHtml('登録者', item.created_by)}
             ${fieldHtml('登録日時', item.created_at)}
             ${fieldHtml('更新者', item.updated_by)}
-${fieldHtml('更新者メール', item.updated_by_email)}
-${fieldHtml('更新日時', item.updated_at)}
+            ${fieldHtml('更新者メール', item.updated_by_email)}
+            ${fieldHtml('更新日時', item.updated_at)}
           </div>
         </section>
 
@@ -384,7 +383,6 @@ ${fieldHtml('更新日時', item.updated_at)}
 
     /****************************************************
      * renderCaseDates ここから
-     * 日付明細を表示
      ****************************************************/
     function renderCaseDates(item) {
       if (item.input_mode === 'days') {
@@ -421,7 +419,6 @@ ${fieldHtml('更新日時', item.updated_at)}
 
     /****************************************************
      * renderChangeLogs ここから
-     * 変更履歴を表示
      ****************************************************/
     function renderChangeLogs() {
       const logs = Array.isArray(state.changeLogs) ? state.changeLogs : [];
@@ -460,6 +457,37 @@ ${fieldHtml('更新日時', item.updated_at)}
     }
     /****************************************************
      * renderChangeLogs ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 請求コマ数計算 ここから
+     ****************************************************/
+    function calculateBillingUnits(item) {
+      if (item.input_mode === 'days') {
+        const requestedDays = Number(item.requested_days || 0);
+        const requiredPeople = Number(item.required_people || 0);
+
+        if (!requestedDays || !requiredPeople) {
+          return 0;
+        }
+
+        return requestedDays * requiredPeople;
+      }
+
+      const dates = Array.isArray(item.case_dates) ? item.case_dates : [];
+
+      if (dates.length === 0) {
+        const requiredPeople = Number(item.required_people || 0);
+        return requiredPeople || 0;
+      }
+
+      return dates.reduce((sum, date) => {
+        return sum + Number(date.required_people || 0);
+      }, 0);
+    }
+    /****************************************************
+     * 請求コマ数計算 ここまで
      ****************************************************/
 
 
@@ -506,6 +534,14 @@ ${fieldHtml('更新日時', item.updated_at)}
       };
 
       return map[value] || value || 'その他';
+    }
+
+    function formatBillingUnits(value) {
+      if (value === '' || value === null || value === undefined || Number(value) === 0) {
+        return '-';
+      }
+
+      return `${value}コマ`;
     }
     /****************************************************
      * 表示名変換 ここまで
