@@ -1197,11 +1197,13 @@ setTimeout(() => {
      * validateUpdatePayload ここから
      ****************************************************/
     function validateUpdatePayload(payload) {
-      if (!payload.case_id) throw new Error('案件IDがありません。');
+if (!payload.case_id) throw new Error('案件IDがありません。');
 if (!payload.updated_by) throw new Error('編集者名を入力してください。');
 if (!payload.updated_by_email) throw new Error('編集者メールを入力してください。');
 if (!payload.change_type) throw new Error('変更種別を選択してください。');
-if (!payload.change_memo) throw new Error('変更メモを入力してください。');
+if (payload.change_type !== 'status_change' && !payload.change_memo) {
+  throw new Error('変更メモを入力してください。');
+}
 
       if (!payload.target_month) throw new Error('対象月を入力してください。');
       if (!payload.case_type) throw new Error('案件種別を選択してください。');
