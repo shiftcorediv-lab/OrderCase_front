@@ -60,6 +60,10 @@
       margin-bottom: 16px;
     }
 
+    .change-reason-card {
+      border: 2px solid #b7ebc6;
+    }
+
     .save-bar {
       position: fixed;
       left: 0;
@@ -195,10 +199,35 @@
     </div>
 
     <div class="read-only-note">
-      編集保存に対応しました。日付明細そのものの編集はまだ未対応です。
+      編集保存に対応しました。保存時は変更種別と変更メモも記録します。日付明細そのものの編集はまだ未対応です。
     </div>
 
     <div class="message" id="messageBox">読み込み中...</div>
+
+    <section class="change-reason-card">
+      <h2>変更理由</h2>
+
+      <div class="grid two">
+        <div>
+          <label for="changeType">変更種別</label>
+          <select id="changeType">
+            <option value="">選択してください</option>
+            <option value="correction">誤入力の修正</option>
+            <option value="condition_change">発注条件変更</option>
+            <option value="status_change">ステータス変更</option>
+            <option value="internal_note">社内メモ更新</option>
+            <option value="other">その他</option>
+          </select>
+          <p class="hint">保存時に必須です。</p>
+        </div>
+
+        <div>
+          <label for="changeMemo">変更メモ</label>
+          <textarea id="changeMemo" placeholder="例：先方より必要人数2名→4名へ変更連絡あり"></textarea>
+          <p class="hint">あとから見返せるよう、理由を短く残してください。</p>
+        </div>
+      </div>
+    </section>
 
     <section>
       <h2>基本情報</h2>
@@ -483,6 +512,8 @@
       });
 
       [
+        'changeType',
+        'changeMemo',
         'targetMonth',
         'caseType',
         'status',
@@ -523,7 +554,6 @@
 
     /****************************************************
      * loadEditPageData ここから
-     * 編集画面に必要な初期データと案件詳細を読み込む
      ****************************************************/
     async function loadEditPageData() {
       const caseId = getQueryParam('case_id');
@@ -724,16 +754,7 @@
 
         showLoading('案件を保存中...');
 
-        const json = await fetchApiJson('', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify({
-            action: 'updateCase',
-            payload
-          })
-        });
+        const json = await postUpdateCase(payload);
 
         if (!json.ok) {
           throw new Error(json.message || '保存に失敗しました');
@@ -743,6 +764,9 @@
 
         const caseId = json.data.case_id;
         document.getElementById('detailLink').href = `./case.html?case_id=${encodeURIComponent(caseId)}`;
+
+        document.getElementById('changeType').value = '';
+        document.getElementById('changeMemo').value = '';
 
       } catch (error) {
         console.error(error);
@@ -761,11 +785,42 @@
 
 
     /****************************************************
+     * postUpdateCase ここから
+     ****************************************************/
+    async function postUpdateCase(payload) {
+      const res = await fetch(window.ORDERCASE_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({
+          action: 'updateCase',
+          payload
+        })
+      });
+
+      const text = await res.text();
+
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        throw new Error('APIの返答がJSONではありません: ' + text.slice(0, 120));
+      }
+    }
+    /****************************************************
+     * postUpdateCase ここまで
+     ****************************************************/
+
+
+    /****************************************************
      * buildUpdatePayload ここから
      ****************************************************/
     function buildUpdatePayload() {
       return {
         case_id: document.getElementById('caseId').value.trim(),
+
+        change_type: document.getElementById('changeType').value,
+        change_memo: document.getElementById('changeMemo').value.trim(),
 
         target_month: document.getElementById('targetMonth').value,
         case_type: document.getElementById('caseType').value,
@@ -814,6 +869,9 @@
      ****************************************************/
     function validateUpdatePayload(payload) {
       if (!payload.case_id) throw new Error('案件IDがありません。');
+      if (!payload.change_type) throw new Error('変更種別を選択してください。');
+      if (!payload.change_memo) throw new Error('変更メモを入力してください。');
+
       if (!payload.target_month) throw new Error('対象月を入力してください。');
       if (!payload.case_type) throw new Error('案件種別を選択してください。');
       if (!payload.input_mode) throw new Error('入力方式を選択してください。');
@@ -837,9 +895,11 @@
       const caseId = document.getElementById('caseId').value || '-';
       const lines = Number(document.getElementById('requiredLines').value || 1);
       const people = Number(document.getElementById('peoplePerLine').value || 1);
+      const changeType = document.getElementById('changeType')?.value || '未選択';
 
       document.getElementById('saveSummary').innerHTML = `
         編集中：${escapeHtml(caseId)}<br>
+        変更種別：${escapeHtml(changeType)}<br>
         必要数：${lines}枠 × ${people}人 = ${lines * people}人
       `;
     }
