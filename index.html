@@ -608,6 +608,8 @@ input[type="time"] {
       try {
         renderOrderCaseHeader('index', '案件登録フォーム v1');
 
+        await requireEditablePermissionForEntryPage();
+
         setupDefaultDates();
         setupEventListeners();
 
@@ -621,6 +623,7 @@ input[type="time"] {
       } catch (error) {
         console.error(error);
         setMessage('初期化エラー: ' + error.message, 'error');
+        disableEntryForm();
       }
     });
     /****************************************************
@@ -628,6 +631,54 @@ input[type="time"] {
      ****************************************************/
 
 
+    /****************************************************
+     * requireEditablePermissionForEntryPage ここから
+     * 登録画面に入れる権限か確認する
+     ****************************************************/
+    async function requireEditablePermissionForEntryPage() {
+      const json = await fetchApiJsonWithParams('getOrderCasePermission', {});
+
+      if (!json.ok) {
+        throw new Error(json.message || 'OrderCase権限の確認に失敗しました');
+      }
+
+      const permission = json.permission || json.data?.permission || '';
+      const canEdit = permission === 'all' || permission === 'edit';
+
+      if (!canEdit) {
+        throw new Error('案件登録権限がありません。案件一覧または詳細画面から閲覧してください。');
+      }
+    }
+    /****************************************************
+     * requireEditablePermissionForEntryPage ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * disableEntryForm ここから
+     * 権限不足や初期化失敗時に登録フォームを止める
+     ****************************************************/
+    function disableEntryForm() {
+      const submitButton = document.getElementById('submitButton');
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = '登録権限がありません';
+      }
+
+      document.querySelectorAll('input, select, textarea, button').forEach(el => {
+        if (el.id === 'submitButton') {
+          return;
+        }
+
+        el.disabled = true;
+      });
+    }
+    /****************************************************
+     * disableEntryForm ここまで
+     ****************************************************/
+
+    
     /****************************************************
      * setupDefaultDates ここから
      ****************************************************/
