@@ -217,9 +217,9 @@
      ****************************************************/
 
 
-    /****************************************************
+       /****************************************************
      * loadCaseDetail ここから
-     * 案件詳細を先に表示し、変更履歴は後から読み込む
+     * 案件詳細と変更履歴を1回のAPI通信でまとめて読み込む
      ****************************************************/
     async function loadCaseDetail() {
       const caseId = getQueryParam('case_id');
@@ -232,25 +232,27 @@
       showLoading('案件詳細を読み込み中...');
 
       try {
-        const detailJson = await fetchApiJsonWithParams('getCaseDetail', {
+        const pageJson = await fetchApiJsonWithParams('getCaseDetailPageData', {
           case_id: caseId
         });
 
-        if (!detailJson.ok) {
-          throw new Error(detailJson.message || '案件詳細の取得に失敗しました');
+        if (!pageJson.ok) {
+          throw new Error(pageJson.message || '案件詳細の取得に失敗しました');
         }
 
-        state.caseDetail = detailJson.data;
-        state.changeLogs = [];
+        const pageData = pageJson.data || {};
+
+        state.caseDetail = pageData.case_detail || null;
+        state.changeLogs = Array.isArray(pageData.change_logs)
+          ? pageData.change_logs
+          : [];
 
         renderCaseDetail();
-        setMessage('案件詳細を読み込みました。変更履歴は後から読み込みます。', '');
+        setMessage('案件詳細を読み込みました。', '');
 
       } finally {
         hideLoading();
       }
-
-      loadCaseChangeLogs(caseId);
     }
     /****************************************************
      * loadCaseDetail ここまで
