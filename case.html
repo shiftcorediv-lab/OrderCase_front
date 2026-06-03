@@ -326,6 +326,30 @@ applyPermissionView();
 
 
     /****************************************************
+     * canViewAmount ここから
+     * 金額表示できる権限か判定する
+     ****************************************************/
+    function canViewAmount() {
+      return state.permission !== 'view_without_amount';
+    }
+    /****************************************************
+     * canViewAmount ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * canViewChangeLogs ここから
+     * 変更履歴を表示できる権限か判定する
+     ****************************************************/
+    function canViewChangeLogs() {
+      return state.permission !== 'view_without_amount';
+    }
+    /****************************************************
+     * canViewChangeLogs ここまで
+     ****************************************************/
+    
+
+    /****************************************************
      * renderCaseDetail ここから
      ****************************************************/
     function renderCaseDetail() {
@@ -400,15 +424,17 @@ applyPermissionView();
           ${renderCaseDates(item)}
         </section>
 
-        <section class="detail-card">
-          <h2 class="section-title">金額</h2>
-          <div class="grid two">
-            ${fieldHtml('金額', formatAmount(item.amount))}
-            ${fieldHtml('金額区分', getAmountTypeName(item.amount_type))}
-            ${fieldHtml('税区分', getTaxTypeName(item.tax_type))}
-            ${fieldHtml('金額メモ', item.amount_memo)}
-          </div>
-        </section>
+                ${canViewAmount() ? `
+          <section class="detail-card">
+            <h2 class="section-title">金額</h2>
+            <div class="grid two">
+              ${fieldHtml('金額', formatAmount(item.amount))}
+              ${fieldHtml('金額区分', getAmountTypeName(item.amount_type))}
+              ${fieldHtml('税区分', getTaxTypeName(item.tax_type))}
+              ${fieldHtml('金額メモ', item.amount_memo)}
+            </div>
+          </section>
+        ` : ''}
 
         <section class="detail-card">
           <h2 class="section-title">メモ</h2>
@@ -432,12 +458,12 @@ applyPermissionView();
           </div>
         </section>
 
-        <section class="detail-card">
-          <h2 class="section-title">変更履歴</h2>
-          ${renderChangeLogs()}
-        </section>
-      `;
-    }
+               ${canViewChangeLogs() ? `
+          <section class="detail-card">
+            <h2 class="section-title">変更履歴</h2>
+            ${renderChangeLogs()}
+          </section>
+        ` : ''}
     /****************************************************
      * renderCaseDetail ここまで
      ****************************************************/
