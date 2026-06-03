@@ -594,6 +594,8 @@
       try {
         renderOrderCaseHeader('', '案件編集');
 
+        await requireEditablePermissionForEditPage();
+
         setupLinks();
         setupEventListeners();
 
@@ -602,12 +604,61 @@
       } catch (error) {
         console.error(error);
         setMessage('読み込みエラー: ' + error.message, 'error');
+        disableEditForm();
       }
     });
     /****************************************************
      * 初期化 ここまで
      ****************************************************/
 
+
+        /****************************************************
+     * requireEditablePermissionForEditPage ここから
+     * 編集画面に入れる権限か確認する
+     ****************************************************/
+    async function requireEditablePermissionForEditPage() {
+      const json = await fetchApiJsonWithParams('getOrderCasePermission', {});
+
+      if (!json.ok) {
+        throw new Error(json.message || 'OrderCase権限の確認に失敗しました');
+      }
+
+      const permission = json.permission || json.data?.permission || '';
+      const canEdit = permission === 'all' || permission === 'edit';
+
+      if (!canEdit) {
+        throw new Error('案件編集権限がありません。案件詳細画面から閲覧してください。');
+      }
+    }
+    /****************************************************
+     * requireEditablePermissionForEditPage ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * disableEditForm ここから
+     * 権限不足や初期化失敗時に編集フォームを止める
+     ****************************************************/
+    function disableEditForm() {
+      const saveButton = document.getElementById('saveButton');
+
+      if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = '編集権限がありません';
+      }
+
+      document.querySelectorAll('input, select, textarea, button').forEach(el => {
+        if (el.id === 'saveButton') {
+          return;
+        }
+
+        el.disabled = true;
+      });
+    }
+    /****************************************************
+     * disableEditForm ここまで
+     ****************************************************/
+    
 
     /****************************************************
      * setupLinks ここから
