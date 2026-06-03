@@ -1268,8 +1268,10 @@ input[type="time"] {
 
         const createdCaseId = json.data.case_id;
 
-        clearFormAfterSubmit();
+sessionStorage.setItem('ordercase_force_list_refresh', '1');
 
+clearFormAfterSubmit();
+        
         setMessage(`登録完了：${createdCaseId}　続けて登録できます。`, 'success');
 
         scrollToPageTop();
