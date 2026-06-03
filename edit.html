@@ -64,6 +64,69 @@
       border: 2px solid #b7ebc6;
     }
 
+    .suggest-wrap {
+      position: relative;
+    }
+
+    .suggest-dropdown {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      background: #fff;
+      border: 1px solid #d0d7de;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      z-index: 2000;
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .suggest-dropdown.show {
+      display: grid;
+      gap: 6px;
+    }
+
+    .suggest-option {
+      width: 100%;
+      background: #f8fafc;
+      color: #333;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .suggest-option:hover {
+      background: #f0fff4;
+      border-color: #b7ebc6;
+    }
+
+    .suggest-main {
+      display: block;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .suggest-sub {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-top: 3px;
+    }
+
+    .suggest-empty {
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #777;
+      line-height: 1.5;
+    }
+
     .sync-option {
       margin-top: 12px;
       padding: 14px;
@@ -203,6 +266,10 @@
       .save-button {
         padding: 14px;
       }
+
+      .suggest-dropdown {
+        max-height: 220px;
+      }
     }
   </style>
 </head>
@@ -224,7 +291,7 @@
     </div>
 
     <div class="read-only-note">
-      編集保存に対応しました。保存時は変更種別と変更メモも記録します。日付明細そのものの個別編集はまだ未対応です。
+      編集保存に対応しました。代理店・店舗は候補から選択できます。日付明細そのものの個別編集はまだ未対応です。
     </div>
 
     <div class="message" id="messageBox">読み込み中...</div>
@@ -303,14 +370,16 @@
       <h2>代理店・連携店舗</h2>
 
       <div class="grid two">
-        <div>
+        <div class="suggest-wrap">
           <label for="agencyName">代理店名</label>
-          <input id="agencyName" />
+          <input id="agencyName" autocomplete="off" />
+          <div class="suggest-dropdown" id="agencySuggest"></div>
         </div>
 
-        <div>
+        <div class="suggest-wrap">
           <label for="storeName">連携店舗</label>
-          <input id="storeName" />
+          <input id="storeName" autocomplete="off" />
+          <div class="suggest-dropdown" id="storeSuggest"></div>
         </div>
 
         <div>
@@ -318,6 +387,10 @@
           <select id="storeArea"></select>
         </div>
       </div>
+
+      <p class="hint">
+        候補を選ぶと入力欄に反映されます。店舗候補を選んだ場合、代理店名とエリアも自動入力されます。
+      </p>
     </section>
 
     <section>
@@ -494,7 +567,8 @@
     const state = {
       caseDetail: null,
       caseTypes: [],
-      settings: {}
+      settings: {},
+      storesMaster: []
     };
     /****************************************************
      * 状態 ここまで
@@ -546,6 +620,14 @@
         document.getElementById(id).addEventListener('input', updateRequiredPeople);
       });
 
+      document.getElementById('agencyName').addEventListener('input', handleAgencyInput);
+      document.getElementById('agencyName').addEventListener('focus', renderAgencySuggestions);
+
+      document.getElementById('storeName').addEventListener('input', handleStoreInput);
+      document.getElementById('storeName').addEventListener('focus', renderStoreSuggestions);
+
+      document.addEventListener('click', handleOutsideSuggestClick);
+
       [
         'changeType',
         'changeMemo',
@@ -555,8 +637,6 @@
         'status',
         'inputMode',
         'replyDeadline',
-        'agencyName',
-        'storeName',
         'storeArea',
         'workLocation',
         'workArea',
@@ -610,6 +690,7 @@
 
         state.caseTypes = bootstrapJson.data.case_types || [];
         state.settings = bootstrapJson.data.settings || {};
+        state.storesMaster = bootstrapJson.data.stores_master || [];
 
         renderCaseTypeOptions();
         renderAreaOptions();
@@ -627,6 +708,9 @@
         fillForm(state.caseDetail);
         updateRequiredPeople();
         updateSaveSummary();
+
+        hideSuggest('agencySuggest');
+        hideSuggest('storeSuggest');
 
         setMessage('案件データを読み込みました', '');
 
@@ -679,6 +763,224 @@
     }
     /****************************************************
      * renderAreaOptions ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 候補表示：代理店 ここから
+     ****************************************************/
+    function handleAgencyInput() {
+      renderAgencySuggestions();
+      renderStoreSuggestions();
+      updateSaveSummary();
+    }
+
+    function renderAgencySuggestions() {
+      const box = document.getElementById('agencySuggest');
+
+      if (document.activeElement !== document.getElementById('agencyName')) {
+        return;
+      }
+
+      const keyword = document.getElementById('agencyName').value.trim();
+
+      const agencies = getUniqueAgencies()
+        .filter(row => {
+          if (!keyword) return true;
+          return normalizeText(row.agency_name).includes(normalizeText(keyword));
+        })
+        .slice(0, 10);
+
+      if (agencies.length === 0) {
+        box.innerHTML = '<div class="suggest-empty">一致する代理店候補はありません。手入力できます。</div>';
+        box.classList.add('show');
+        return;
+      }
+
+      box.innerHTML = agencies.map(row => {
+        return `
+          <button type="button" class="suggest-option" data-agency-name="${escapeHtml(row.agency_name)}">
+            <span class="suggest-main">${escapeHtml(row.agency_name)}</span>
+            <span class="suggest-sub">登録済み代理店</span>
+          </button>
+        `;
+      }).join('');
+
+      box.querySelectorAll('.suggest-option').forEach(button => {
+        button.addEventListener('click', () => {
+          selectAgencySuggestion(button.dataset.agencyName);
+        });
+      });
+
+      box.classList.add('show');
+    }
+
+    function selectAgencySuggestion(agencyName) {
+      document.getElementById('agencyName').value = agencyName;
+
+      hideSuggest('agencySuggest');
+      renderStoreSuggestions();
+      updateSaveSummary();
+
+      setTimeout(() => {
+        document.getElementById('storeName').focus();
+      }, 50);
+    }
+    /****************************************************
+     * 候補表示：代理店 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 候補表示：店舗 ここから
+     ****************************************************/
+    function handleStoreInput() {
+      renderStoreSuggestions();
+      updateSaveSummary();
+    }
+
+    function renderStoreSuggestions() {
+      const box = document.getElementById('storeSuggest');
+
+      if (document.activeElement !== document.getElementById('storeName')) {
+        return;
+      }
+
+      const storeKeyword = document.getElementById('storeName').value.trim();
+      const agencyName = document.getElementById('agencyName').value.trim();
+
+      const matchedAgencyName = findExactAgencyName(agencyName);
+
+      let stores = state.storesMaster.slice();
+
+      if (matchedAgencyName) {
+        stores = stores.filter(row => {
+          return normalizeText(row.agency_name) === normalizeText(matchedAgencyName);
+        });
+      }
+
+      if (storeKeyword) {
+        stores = stores.filter(row => {
+          return normalizeText(row.store_name).includes(normalizeText(storeKeyword));
+        });
+      }
+
+      stores = stores
+        .filter(row => row.store_name)
+        .slice(0, 12);
+
+      if (stores.length === 0) {
+        const message = matchedAgencyName
+          ? 'この代理店に紐づく店舗候補はありません。手入力できます。'
+          : '一致する店舗候補はありません。手入力できます。';
+
+        box.innerHTML = `<div class="suggest-empty">${message}</div>`;
+        box.classList.add('show');
+        return;
+      }
+
+      box.innerHTML = stores.map((row, index) => {
+        return `
+          <button type="button" class="suggest-option" data-store-index="${index}">
+            <span class="suggest-main">${escapeHtml(row.store_name)}</span>
+            <span class="suggest-sub">${escapeHtml(row.agency_name || '-')} / ${escapeHtml(row.store_area || '-')}</span>
+          </button>
+        `;
+      }).join('');
+
+      box.querySelectorAll('.suggest-option').forEach(button => {
+        const index = Number(button.dataset.storeIndex);
+        button.addEventListener('click', () => {
+          selectStoreSuggestion(stores[index]);
+        });
+      });
+
+      box.classList.add('show');
+    }
+
+    function selectStoreSuggestion(row) {
+      document.getElementById('storeName').value = row.store_name || '';
+
+      if (row.agency_name) {
+        document.getElementById('agencyName').value = row.agency_name;
+      }
+
+      if (row.store_area) {
+        document.getElementById('storeArea').value = row.store_area;
+      }
+
+      if (row.store_area && !document.getElementById('workArea').value) {
+        document.getElementById('workArea').value = row.store_area;
+      }
+
+      hideSuggest('storeSuggest');
+      hideSuggest('agencySuggest');
+      updateSaveSummary();
+    }
+    /****************************************************
+     * 候補表示：店舗 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 候補共通 ここから
+     ****************************************************/
+    function getUniqueAgencies() {
+      const map = {};
+
+      state.storesMaster.forEach(row => {
+        const name = row.agency_name || '';
+        if (!name) return;
+
+        const key = normalizeText(name);
+
+        if (!map[key]) {
+          map[key] = {
+            agency_name: name
+          };
+        }
+      });
+
+      return Object.values(map).sort((a, b) => {
+        return String(a.agency_name).localeCompare(String(b.agency_name), 'ja');
+      });
+    }
+
+    function findExactAgencyName(value) {
+      if (!value) return '';
+
+      const target = normalizeText(value);
+
+      const found = getUniqueAgencies().find(row => {
+        return normalizeText(row.agency_name) === target;
+      });
+
+      return found ? found.agency_name : '';
+    }
+
+    function normalizeText(value) {
+      return String(value || '')
+        .trim()
+        .normalize('NFKC')
+        .replace(/\s+/g, '')
+        .toLowerCase();
+    }
+
+    function handleOutsideSuggestClick(event) {
+      if (!event.target.closest('.suggest-wrap')) {
+        hideSuggest('agencySuggest');
+        hideSuggest('storeSuggest');
+      }
+    }
+
+    function hideSuggest(id) {
+      const box = document.getElementById(id);
+      if (box) {
+        box.classList.remove('show');
+      }
+    }
+    /****************************************************
+     * 候補共通 ここまで
      ****************************************************/
 
 
