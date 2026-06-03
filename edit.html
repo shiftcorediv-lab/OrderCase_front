@@ -1118,8 +1118,10 @@
 
 const caseId = json.data.case_id;
 
+sessionStorage.setItem('ordercase_force_list_refresh', '1');
+
 setTimeout(() => {
-  window.location.href = `./case.html?case_id=${encodeURIComponent(caseId)}`;
+  window.location.href = `./case.html?case_id=${encodeURIComponent(caseId)}&force_refresh=1`;
 }, 500);
 
       } catch (error) {
