@@ -365,6 +365,7 @@ applyPermissionView();
       const caseTypeName = getCaseTypeName(item.case_type);
       const scheduleText = getScheduleText(item);
       const billingUnits = calculateBillingUnits(item);
+      const agencyStoreIdText = `${item.agency_id || '-'} / ${item.store_id || '-'}`;
 
       const amountSectionHtml = canViewAmount() ? `
         <section class="detail-card">
@@ -411,7 +412,7 @@ applyPermissionView();
             ${fieldHtml('代理店', item.agency_name)}
             ${fieldHtml('連携店舗', item.store_name)}
             ${fieldHtml('連携店舗エリア', item.store_area)}
-            ${fieldHtml('代理店ID / 店舗ID', `${item.agency_id || '-'} / ${item.store_id || '-'}`)}
+            ${fieldHtml('代理店ID / 店舗ID', agencyStoreIdText)}
           </div>
         </section>
 
