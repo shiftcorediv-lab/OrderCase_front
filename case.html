@@ -277,6 +277,8 @@ applyPermissionView();
         renderCaseDetail();
         setMessage('案件詳細を読み込みました。', '');
 
+        removeForceRefreshFromUrl();
+
       } finally {
         hideLoading();
       }
@@ -645,6 +647,30 @@ applyPermissionView();
      ****************************************************/
 
 
+    /****************************************************
+     * removeForceRefreshFromUrl ここから
+     * force_refresh=1 を一度使ったらURLから消す
+     ****************************************************/
+    function removeForceRefreshFromUrl() {
+      const url = new URL(window.location.href);
+
+      if (!url.searchParams.has('force_refresh')) {
+        return;
+      }
+
+      url.searchParams.delete('force_refresh');
+
+      window.history.replaceState(
+        {},
+        document.title,
+        url.pathname + url.search + url.hash
+      );
+    }
+    /****************************************************
+     * removeForceRefreshFromUrl ここまで
+     ****************************************************/
+
+    
     /****************************************************
      * 小物関数 ここから
      ****************************************************/
