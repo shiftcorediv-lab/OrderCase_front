@@ -97,3 +97,40 @@ async function postCreateCase(payload) {
 /****************************************************
  * postCreateCase ここまで
  ****************************************************/
+
+/****************************************************
+ * postUpdateCase ここから
+ ****************************************************/
+async function postUpdateCase(payload) {
+  const base = window.ORDERCASE_CONFIG.API_URL;
+
+  if (!base || !base.startsWith('https://')) {
+    throw new Error('API URLが不正です: ' + base);
+  }
+
+  const res = await fetch(base, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify({
+      action: 'updateCase',
+      payload: payload
+    })
+  });
+
+  const text = await res.text();
+
+  let json;
+
+  try {
+    json = JSON.parse(text);
+  } catch (error) {
+    throw new Error('APIの返答がJSONではありません: ' + text.slice(0, 120));
+  }
+
+  return json;
+}
+/****************************************************
+ * postUpdateCase ここまで
+ ****************************************************/
