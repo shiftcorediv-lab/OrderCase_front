@@ -219,6 +219,7 @@
 
     /****************************************************
      * loadCaseDetail ここから
+     * 案件詳細を先に表示し、変更履歴は後から読み込む
      ****************************************************/
     async function loadCaseDetail() {
       const caseId = getQueryParam('case_id');
@@ -240,6 +241,32 @@
         }
 
         state.caseDetail = detailJson.data;
+        state.changeLogs = [];
+
+        renderCaseDetail();
+        setMessage('案件詳細を読み込みました。変更履歴は後から読み込みます。', '');
+
+      } finally {
+        hideLoading();
+      }
+
+      loadCaseChangeLogs(caseId);
+    }
+    /****************************************************
+     * loadCaseDetail ここまで
+     ****************************************************/
+
+    /****************************************************
+     * loadCaseChangeLogs ここから
+     * 変更履歴を遅延読み込みする
+     ****************************************************/
+    async function loadCaseChangeLogs(caseId) {
+      try {
+        const logRoot = document.getElementById('changeLogRoot');
+
+        if (logRoot) {
+          logRoot.innerHTML = '<div class="message">変更履歴を読み込み中...</div>';
+        }
 
         const logsJson = await fetchApiJsonWithParams('getCaseChangeLogs', {
           case_id: caseId
@@ -253,14 +280,19 @@
         }
 
         renderCaseDetail();
-        setMessage('案件詳細を読み込みました', '');
 
-      } finally {
-        hideLoading();
+      } catch (error) {
+        console.warn('変更履歴の取得に失敗しました:', error);
+
+        const logRoot = document.getElementById('changeLogRoot');
+
+        if (logRoot) {
+          logRoot.innerHTML = '<div class="message error">変更履歴を読み込めませんでした。</div>';
+        }
       }
     }
     /****************************************************
-     * loadCaseDetail ここまで
+     * loadCaseChangeLogs ここまで
      ****************************************************/
 
 
