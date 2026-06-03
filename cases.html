@@ -568,6 +568,23 @@
      * loadListPageData ここまで
      ****************************************************/
 
+    /****************************************************
+     * debounceLoadListPageData ここから
+     * キーワード入力時の一覧再読み込みを少し遅らせる
+     ****************************************************/
+    function debounceLoadListPageData() {
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+      }
+
+      searchTimer = setTimeout(function() {
+        loadListPageData();
+      }, 300);
+    }
+    /****************************************************
+     * debounceLoadListPageData ここまで
+     ****************************************************/
+    
 
     /****************************************************
      * renderCaseTypeFilter ここから
