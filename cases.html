@@ -134,13 +134,13 @@
 
     @media (min-width: 980px) {
       .case-main-row {
-        grid-template-columns: 0.9fr minmax(0, 1.8fr) 100px 130px;
+        grid-template-columns: 0.9fr minmax(0, 1.8fr) 96px 96px 130px;
       }
     }
 
     @media (min-width: 720px) and (max-width: 979px) {
       .case-main-row {
-        grid-template-columns: 1fr minmax(0, 1.5fr) 90px 130px;
+        grid-template-columns: 1fr minmax(0, 1.5fr) 86px 86px 130px;
       }
     }
 
@@ -162,16 +162,25 @@
       min-width: 0;
     }
 
-    .required-people-main {
+    .required-people-main,
+    .billing-units-main {
       font-size: 22px;
       font-weight: bold;
-      color: #2e7d32;
       line-height: 1.15;
       white-space: nowrap;
       min-width: 0;
     }
 
-    .required-people-main span {
+    .required-people-main {
+      color: #2e7d32;
+    }
+
+    .billing-units-main {
+      color: #3949ab;
+    }
+
+    .required-people-main span,
+    .billing-units-main span {
       font-size: 11px;
       color: #666;
       display: block;
@@ -309,8 +318,8 @@
       }
 
       .case-main-row {
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 5px 10px;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 5px 9px;
         margin-bottom: 6px;
         align-items: end;
       }
@@ -334,12 +343,22 @@
         grid-column: 2 / 3;
         align-self: end;
         justify-self: end;
-        font-size: 21px;
+        font-size: 20px;
         text-align: right;
         min-width: 42px;
       }
 
-      .required-people-main span {
+      .billing-units-main {
+        grid-column: 3 / 4;
+        align-self: end;
+        justify-self: end;
+        font-size: 20px;
+        text-align: right;
+        min-width: 42px;
+      }
+
+      .required-people-main span,
+      .billing-units-main span {
         font-size: 10px;
       }
 
@@ -607,6 +626,7 @@
       const caseTypeName = getCaseTypeName(item.case_type, state.caseTypes);
       const statusName = getStatusName(item.status);
       const detailUrl = `./case.html?case_id=${encodeURIComponent(item.case_id)}`;
+      const billingUnits = calculateBillingUnits(item);
 
       card.innerHTML = `
         <div class="case-top-row">
@@ -624,6 +644,11 @@
           <div class="required-people-main">
             <span>必要人数</span>
             ${escapeHtml(formatRequiredPeople(item.required_people))}
+          </div>
+
+          <div class="billing-units-main">
+            <span>請求コマ</span>
+            ${escapeHtml(formatBillingUnits(billingUnits))}
           </div>
 
           <a class="detail-link" href="${detailUrl}">詳細を見る</a>
@@ -670,6 +695,37 @@
 
 
     /****************************************************
+     * 請求コマ数計算 ここから
+     ****************************************************/
+    function calculateBillingUnits(item) {
+      if (item.input_mode === 'days') {
+        const requestedDays = Number(item.requested_days || 0);
+        const requiredPeople = Number(item.required_people || 0);
+
+        if (!requestedDays || !requiredPeople) {
+          return 0;
+        }
+
+        return requestedDays * requiredPeople;
+      }
+
+      const dates = Array.isArray(item.case_dates) ? item.case_dates : [];
+
+      if (dates.length === 0) {
+        const requiredPeople = Number(item.required_people || 0);
+        return requiredPeople || 0;
+      }
+
+      return dates.reduce((sum, date) => {
+        return sum + Number(date.required_people || 0);
+      }, 0);
+    }
+    /****************************************************
+     * 請求コマ数計算 ここまで
+     ****************************************************/
+
+
+    /****************************************************
      * 表示整形 ここから
      ****************************************************/
     function formatCreatedAt(value) {
@@ -707,6 +763,14 @@
       }
 
       return `${value}人`;
+    }
+
+    function formatBillingUnits(value) {
+      if (value === '' || value === null || value === undefined || Number(value) === 0) {
+        return '-';
+      }
+
+      return `${value}コマ`;
     }
     /****************************************************
      * 表示整形 ここまで
