@@ -299,27 +299,38 @@
     <section class="change-reason-card">
       <h2>変更理由</h2>
 
-      <div class="grid two">
-        <div>
-          <label for="changeType">変更種別</label>
-          <select id="changeType">
-            <option value="">選択してください</option>
-            <option value="correction">誤入力の修正</option>
-            <option value="condition_change">発注条件変更</option>
-            <option value="status_change">ステータス変更</option>
-            <option value="internal_note">社内メモ更新</option>
-            <option value="other">その他</option>
-          </select>
-          <p class="hint">保存時に必須です。</p>
-        </div>
+<div class="grid two">
+  <div>
+    <label for="editorName">編集者名</label>
+    <input id="editorName" placeholder="例：細見" />
+    <p class="hint">保存履歴に残ります。後でShiftCoreログイン情報から自動入力に置き換え予定です。</p>
+  </div>
 
-        <div>
-          <label for="changeMemo">変更メモ</label>
-          <textarea id="changeMemo" placeholder="例：先方より必要人数2名→4名へ変更連絡あり"></textarea>
-          <p class="hint">あとから見返せるよう、理由を短く残してください。</p>
-        </div>
-      </div>
-    </section>
+  <div>
+    <label for="editorEmail">編集者メール</label>
+    <input id="editorEmail" type="email" placeholder="例：name@example.com" />
+    <p class="hint">変更履歴の追跡用です。</p>
+  </div>
+
+  <div>
+    <label for="changeType">変更種別</label>
+    <select id="changeType">
+      <option value="">選択してください</option>
+      <option value="correction">誤入力の修正</option>
+      <option value="condition_change">発注条件変更</option>
+      <option value="status_change">ステータス変更</option>
+      <option value="internal_note">社内メモ更新</option>
+      <option value="other">その他</option>
+    </select>
+    <p class="hint">保存時に必須です。</p>
+  </div>
+
+  <div>
+    <label for="changeMemo">変更メモ</label>
+    <textarea id="changeMemo" placeholder="例：先方より必要人数2名→4名へ変更連絡あり"></textarea>
+    <p class="hint">あとから見返せるよう、理由を短く残してください。</p>
+  </div>
+</div>    </section>
 
     <section>
       <h2>基本情報</h2>
@@ -628,10 +639,12 @@
 
       document.addEventListener('click', handleOutsideSuggestClick);
 
-      [
-        'changeType',
-        'changeMemo',
-        'syncCaseDatesRequiredPeople',
+[
+  'editorName',
+  'editorEmail',
+  'changeType',
+  'changeMemo',
+  'syncCaseDatesRequiredPeople',
         'targetMonth',
         'caseType',
         'status',
@@ -1102,12 +1115,11 @@
 
         setMessage(`保存しました：${json.data.case_id}`, 'success');
 
-        const caseId = json.data.case_id;
-        document.getElementById('detailLink').href = `./case.html?case_id=${encodeURIComponent(caseId)}`;
+const caseId = json.data.case_id;
 
-        document.getElementById('changeType').value = '';
-        document.getElementById('changeMemo').value = '';
-        document.getElementById('syncCaseDatesRequiredPeople').checked = false;
+setTimeout(() => {
+  window.location.href = `./case.html?case_id=${encodeURIComponent(caseId)}`;
+}, 500);
 
       } catch (error) {
         console.error(error);
@@ -1132,6 +1144,9 @@
       return {
         case_id: document.getElementById('caseId').value.trim(),
 
+        updated_by: document.getElementById('editorName').value.trim(),
+        updated_by_email: document.getElementById('editorEmail').value.trim(),
+        
         change_type: document.getElementById('changeType').value,
         change_memo: document.getElementById('changeMemo').value.trim(),
 
@@ -1171,7 +1186,6 @@
         internal_memo: document.getElementById('internalMemo').value.trim(),
         operation_memo: document.getElementById('operationMemo').value.trim(),
 
-        updated_by: '画面編集'
       };
     }
     /****************************************************
@@ -1184,8 +1198,10 @@
      ****************************************************/
     function validateUpdatePayload(payload) {
       if (!payload.case_id) throw new Error('案件IDがありません。');
-      if (!payload.change_type) throw new Error('変更種別を選択してください。');
-      if (!payload.change_memo) throw new Error('変更メモを入力してください。');
+if (!payload.updated_by) throw new Error('編集者名を入力してください。');
+if (!payload.updated_by_email) throw new Error('編集者メールを入力してください。');
+if (!payload.change_type) throw new Error('変更種別を選択してください。');
+if (!payload.change_memo) throw new Error('変更メモを入力してください。');
 
       if (!payload.target_month) throw new Error('対象月を入力してください。');
       if (!payload.case_type) throw new Error('案件種別を選択してください。');
