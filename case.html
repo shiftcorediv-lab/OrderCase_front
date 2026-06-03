@@ -46,6 +46,72 @@
       color: #555;
     }
 
+    .change-log-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .change-log-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px;
+      background: #f8fafc;
+    }
+
+    .change-log-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .change-log-title {
+      font-weight: 800;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    .change-log-meta {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .change-log-type {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #eef2ff;
+      color: #3949ab;
+      white-space: nowrap;
+    }
+
+    .change-log-memo {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid #edf0f3;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .change-log-fields {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid #edf0f3;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
     @media (max-width: 480px) {
       .actions {
         display: grid;
@@ -54,6 +120,15 @@
 
       .actions .button-link {
         width: 100%;
+      }
+
+      .change-log-head {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .change-log-type {
+        width: fit-content;
       }
     }
   </style>
@@ -90,7 +165,8 @@
      * 状態 ここから
      ****************************************************/
     const state = {
-      caseDetail: null
+      caseDetail: null,
+      changeLogs: []
     };
     /****************************************************
      * 状態 ここまで
@@ -143,7 +219,7 @@
 
     /****************************************************
      * loadCaseDetail ここから
-     * URLの case_id を元に案件詳細を取得
+     * URLの case_id を元に案件詳細と変更履歴を取得
      ****************************************************/
     async function loadCaseDetail() {
       const caseId = getQueryParam('case_id');
@@ -156,15 +232,26 @@
       showLoading('案件詳細を読み込み中...');
 
       try {
-        const json = await fetchApiJsonWithParams('getCaseDetail', {
+        const detailJson = await fetchApiJsonWithParams('getCaseDetail', {
           case_id: caseId
         });
 
-        if (!json.ok) {
-          throw new Error(json.message || '案件詳細の取得に失敗しました');
+        if (!detailJson.ok) {
+          throw new Error(detailJson.message || '案件詳細の取得に失敗しました');
         }
 
-        state.caseDetail = json.data;
+        state.caseDetail = detailJson.data;
+
+        const logsJson = await fetchApiJsonWithParams('getCaseChangeLogs', {
+          case_id: caseId
+        });
+
+        if (logsJson.ok) {
+          state.changeLogs = Array.isArray(logsJson.data) ? logsJson.data : [];
+        } else {
+          state.changeLogs = [];
+          console.warn('変更履歴の取得に失敗しました:', logsJson.message);
+        }
 
         renderCaseDetail();
         setMessage('案件詳細を読み込みました', '');
@@ -282,6 +369,11 @@
             ${fieldHtml('更新日時', item.updated_at)}
           </div>
         </section>
+
+        <section class="detail-card">
+          <h2 class="section-title">変更履歴</h2>
+          ${renderChangeLogs()}
+        </section>
       `;
     }
     /****************************************************
@@ -327,6 +419,50 @@
 
 
     /****************************************************
+     * renderChangeLogs ここから
+     * 変更履歴を表示
+     ****************************************************/
+    function renderChangeLogs() {
+      const logs = Array.isArray(state.changeLogs) ? state.changeLogs : [];
+
+      if (logs.length === 0) {
+        return '<div class="empty">変更履歴はありません。</div>';
+      }
+
+      const html = logs.map(log => {
+        return `
+          <div class="change-log-item">
+            <div class="change-log-head">
+              <div>
+                <div class="change-log-title">${escapeHtml(log.change_reason || getChangeTypeDisplayName(log.changed_type))}</div>
+                <div class="change-log-meta">
+                  ${escapeHtml(log.changed_at || '-')} / ${escapeHtml(log.changed_by || '-')}
+                </div>
+              </div>
+              <div class="change-log-type">${escapeHtml(getChangeTypeDisplayName(log.changed_type))}</div>
+            </div>
+
+            <div class="change-log-memo">
+              <strong>変更メモ：</strong><br>
+              ${escapeHtml(log.memo || '-')}
+            </div>
+
+            <div class="change-log-fields">
+              <strong>変更内容：</strong><br>
+              ${escapeHtml(log.changed_fields || '-')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      return `<div class="change-log-list">${html}</div>`;
+    }
+    /****************************************************
+     * renderChangeLogs ここまで
+     ****************************************************/
+
+
+    /****************************************************
      * HTML部品 ここから
      ****************************************************/
     function fieldHtml(label, value) {
@@ -353,6 +489,25 @@
     }
     /****************************************************
      * HTML部品 ここまで
+     ****************************************************/
+
+
+    /****************************************************
+     * 表示名変換 ここから
+     ****************************************************/
+    function getChangeTypeDisplayName(value) {
+      const map = {
+        correction: '誤入力の修正',
+        condition_change: '発注条件変更',
+        status_change: 'ステータス変更',
+        internal_note: '社内メモ更新',
+        other: 'その他'
+      };
+
+      return map[value] || value || 'その他';
+    }
+    /****************************************************
+     * 表示名変換 ここまで
      ****************************************************/
 
 
