@@ -366,7 +366,8 @@
             ${fieldHtml('登録者', item.created_by)}
             ${fieldHtml('登録日時', item.created_at)}
             ${fieldHtml('更新者', item.updated_by)}
-            ${fieldHtml('更新日時', item.updated_at)}
+${fieldHtml('更新者メール', item.updated_by_email)}
+${fieldHtml('更新日時', item.updated_at)}
           </div>
         </section>
 
@@ -436,7 +437,7 @@
               <div>
                 <div class="change-log-title">${escapeHtml(log.change_reason || getChangeTypeDisplayName(log.changed_type))}</div>
                 <div class="change-log-meta">
-                  ${escapeHtml(log.changed_at || '-')} / ${escapeHtml(log.changed_by || '-')}
+                  ${escapeHtml(log.changed_at || '-')} / ${escapeHtml(log.changed_by || '-')} / ${escapeHtml(log.changed_by_email || '-')}
                 </div>
               </div>
               <div class="change-log-type">${escapeHtml(getChangeTypeDisplayName(log.changed_type))}</div>
