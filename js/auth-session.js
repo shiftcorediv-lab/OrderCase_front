@@ -58,7 +58,7 @@ async function requireOrderCaseLogin() {
         return;
       }
 
-      const idToken = await user.getIdToken(true);
+      const idToken = await user.getIdToken();
 
       window.ORDERCASE_AUTH = {
         firebaseUser: user,
