@@ -64,6 +64,27 @@
       border: 2px solid #b7ebc6;
     }
 
+    .sync-option {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .sync-option label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 0;
+      cursor: pointer;
+    }
+
+    .sync-option input[type="checkbox"] {
+      width: auto;
+      min-width: auto;
+    }
+
     .save-bar {
       position: fixed;
       left: 0;
@@ -148,6 +169,10 @@
         min-width: 0;
       }
 
+      .sync-option input[type="checkbox"] {
+        width: auto;
+      }
+
       input[type="month"],
       input[type="date"],
       input[type="time"] {
@@ -199,7 +224,7 @@
     </div>
 
     <div class="read-only-note">
-      編集保存に対応しました。保存時は変更種別と変更メモも記録します。日付明細そのものの編集はまだ未対応です。
+      編集保存に対応しました。保存時は変更種別と変更メモも記録します。日付明細そのものの個別編集はまだ未対応です。
     </div>
 
     <div class="message" id="messageBox">読み込み中...</div>
@@ -375,8 +400,18 @@
         <div>
           <label for="caseDatesText">日付明細</label>
           <textarea id="caseDatesText" readonly></textarea>
-          <p class="hint">日付明細の編集は次工程で対応します。</p>
+          <p class="hint">日付明細の個別編集は次工程で対応します。</p>
         </div>
+      </div>
+
+      <div class="sync-option">
+        <label for="syncCaseDatesRequiredPeople">
+          <input id="syncCaseDatesRequiredPeople" type="checkbox" />
+          <span>日付明細にも必要数を反映する</span>
+        </label>
+        <p class="hint">
+          チェックすると、現在登録されている全日付の「必要枠数」「1枠あたり人数」「必要人数」も、上の必要数に合わせて更新します。
+        </p>
       </div>
     </section>
 
@@ -514,6 +549,7 @@
       [
         'changeType',
         'changeMemo',
+        'syncCaseDatesRequiredPeople',
         'targetMonth',
         'caseType',
         'status',
@@ -684,6 +720,8 @@
       setValue('internalMemo', item.internal_memo);
       setValue('operationMemo', item.operation_memo);
 
+      document.getElementById('syncCaseDatesRequiredPeople').checked = false;
+
       renderCaseDatesText(item);
     }
     /****************************************************
@@ -767,6 +805,7 @@
 
         document.getElementById('changeType').value = '';
         document.getElementById('changeMemo').value = '';
+        document.getElementById('syncCaseDatesRequiredPeople').checked = false;
 
       } catch (error) {
         console.error(error);
@@ -782,6 +821,7 @@
     /****************************************************
      * submitUpdateCase ここまで
      ****************************************************/
+
 
     /****************************************************
      * buildUpdatePayload ここから
@@ -817,6 +857,8 @@
         required_lines: Number(document.getElementById('requiredLines').value || 1),
         people_per_line: Number(document.getElementById('peoplePerLine').value || 1),
         required_skill: document.getElementById('requiredSkill').value || 'any',
+
+        sync_case_dates_required_people: document.getElementById('syncCaseDatesRequiredPeople').checked,
 
         amount: document.getElementById('amount').value,
         amount_type: document.getElementById('amountType').value,
@@ -867,10 +909,12 @@
       const lines = Number(document.getElementById('requiredLines').value || 1);
       const people = Number(document.getElementById('peoplePerLine').value || 1);
       const changeType = document.getElementById('changeType')?.value || '未選択';
+      const syncDates = document.getElementById('syncCaseDatesRequiredPeople')?.checked;
 
       document.getElementById('saveSummary').innerHTML = `
         編集中：${escapeHtml(caseId)}<br>
         変更種別：${escapeHtml(changeType)}<br>
+        日付明細反映：${syncDates ? 'する' : 'しない'}<br>
         必要数：${lines}枠 × ${people}人 = ${lines * people}人
       `;
     }
