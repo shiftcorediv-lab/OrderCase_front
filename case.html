@@ -233,8 +233,9 @@
 
       try {
         const pageJson = await fetchApiJsonWithParams('getCaseDetailPageData', {
-          case_id: caseId
-        });
+  case_id: caseId,
+  force_refresh: getQueryParam('force_refresh')
+});
 
         if (!pageJson.ok) {
           throw new Error(pageJson.message || '案件詳細の取得に失敗しました');
