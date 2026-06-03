@@ -782,21 +782,21 @@
      * API・検索条件 ここから
      ****************************************************/
     function getListFilters() {
-      return {
-        keyword: document.getElementById('keyword').value.trim(),
-        target_month: document.getElementById('targetMonthFilter').value,
-        status: document.getElementById('statusFilter').value,
-        case_type: document.getElementById('caseTypeFilter').value
-      };
-    }
+  const forceRefreshFromUrl = getQueryParam('force_refresh');
+  const forceRefreshFromStorage = sessionStorage.getItem('ordercase_force_list_refresh');
 
-    function debounceLoadListPageData() {
-      clearTimeout(searchTimer);
+  if (forceRefreshFromStorage === '1') {
+    sessionStorage.removeItem('ordercase_force_list_refresh');
+  }
 
-      searchTimer = setTimeout(() => {
-        loadListPageData();
-      }, 500);
-    }
+  return {
+    keyword: document.getElementById('keyword').value.trim(),
+    target_month: document.getElementById('targetMonthFilter').value,
+    status: document.getElementById('statusFilter').value,
+    case_type: document.getElementById('caseTypeFilter').value,
+    force_refresh: forceRefreshFromUrl === '1' || forceRefreshFromStorage === '1' ? '1' : ''
+  };
+}
     /****************************************************
      * API・検索条件 ここまで
      ****************************************************/
