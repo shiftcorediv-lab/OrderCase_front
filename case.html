@@ -366,6 +366,25 @@ applyPermissionView();
       const scheduleText = getScheduleText(item);
       const billingUnits = calculateBillingUnits(item);
 
+      const amountSectionHtml = canViewAmount() ? `
+        <section class="detail-card">
+          <h2 class="section-title">金額</h2>
+          <div class="grid two">
+            ${fieldHtml('金額', formatAmount(item.amount))}
+            ${fieldHtml('金額区分', getAmountTypeName(item.amount_type))}
+            ${fieldHtml('税区分', getTaxTypeName(item.tax_type))}
+            ${fieldHtml('金額メモ', item.amount_memo)}
+          </div>
+        </section>
+      ` : '';
+
+      const changeLogsSectionHtml = canViewChangeLogs() ? `
+        <section class="detail-card">
+          <h2 class="section-title">変更履歴</h2>
+          ${renderChangeLogs()}
+        </section>
+      ` : '';
+      
       root.innerHTML = `
         <section class="detail-card">
           <div class="detail-head">
@@ -424,17 +443,7 @@ applyPermissionView();
           ${renderCaseDates(item)}
         </section>
 
-                ${canViewAmount() ? `
-          <section class="detail-card">
-            <h2 class="section-title">金額</h2>
-            <div class="grid two">
-              ${fieldHtml('金額', formatAmount(item.amount))}
-              ${fieldHtml('金額区分', getAmountTypeName(item.amount_type))}
-              ${fieldHtml('税区分', getTaxTypeName(item.tax_type))}
-              ${fieldHtml('金額メモ', item.amount_memo)}
-            </div>
-          </section>
-        ` : ''}
+       ${amountSectionHtml}
 
         <section class="detail-card">
           <h2 class="section-title">メモ</h2>
@@ -458,12 +467,11 @@ applyPermissionView();
           </div>
         </section>
 
-               ${canViewChangeLogs() ? `
-          <section class="detail-card">
-            <h2 class="section-title">変更履歴</h2>
-            ${renderChangeLogs()}
-          </section>
-        ` : ''}
+               ${changeLogsSectionHtml}
+
+      `; 
+    }
+  
     /****************************************************
      * renderCaseDetail ここまで
      ****************************************************/
