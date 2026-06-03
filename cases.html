@@ -456,9 +456,10 @@
      * 状態 ここから
      ****************************************************/
     const state = {
-      cases: [],
-      caseTypes: []
-    };
+  cases: [],
+  caseTypes: [],
+  permission: ''
+};
 
     let searchTimer = null;
     /****************************************************
@@ -550,9 +551,12 @@
           throw new Error(json.message || '一覧データ取得に失敗しました');
         }
 
+        state.permission = json.permission || '';
         state.caseTypes = json.data.case_types || [];
         state.cases = json.data.cases || [];
 
+        applyPermissionView();
+        
         renderCaseTypeFilter();
         renderCases();
 
@@ -568,6 +572,23 @@
      * loadListPageData ここまで
      ****************************************************/
 
+    
+    /****************************************************
+     * applyPermissionView ここから
+     * 権限に応じて画面上の導線を制御する
+     ****************************************************/
+    function applyPermissionView() {
+      const canEdit = state.permission === 'all' || state.permission === 'edit';
+
+      document.querySelectorAll('a[href="./index.html"], a[href="index.html"]').forEach(link => {
+        link.style.display = canEdit ? '' : 'none';
+      });
+    }
+    /****************************************************
+     * applyPermissionView ここまで
+     ****************************************************/
+    
+    
     /****************************************************
      * debounceLoadListPageData ここから
      * キーワード入力時の一覧再読み込みを少し遅らせる
