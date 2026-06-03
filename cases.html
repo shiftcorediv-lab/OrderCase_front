@@ -562,6 +562,8 @@
 
         setMessage(`${state.cases.length}件の案件を読み込みました`, '');
 
+        removeForceRefreshFromUrl();
+
       } finally {
         button.disabled = false;
         button.textContent = '再読み込み';
@@ -839,6 +841,30 @@
      * API・検索条件 ここまで
      ****************************************************/
 
+
+    /****************************************************
+     * removeForceRefreshFromUrl ここから
+     * force_refresh=1 を一度使ったらURLから消す
+     ****************************************************/
+    function removeForceRefreshFromUrl() {
+      const url = new URL(window.location.href);
+
+      if (!url.searchParams.has('force_refresh')) {
+        return;
+      }
+
+      url.searchParams.delete('force_refresh');
+
+      window.history.replaceState(
+        {},
+        document.title,
+        url.pathname + url.search + url.hash
+      );
+    }
+    /****************************************************
+     * removeForceRefreshFromUrl ここまで
+     ****************************************************/
+    
 
     /****************************************************
      * 小物関数 ここから
