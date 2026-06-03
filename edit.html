@@ -784,32 +784,63 @@
      ****************************************************/
 
 
-    /****************************************************
-     * postUpdateCase ここから
-     ****************************************************/
-    async function postUpdateCase(payload) {
-      const res = await fetch(window.ORDERCASE_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
-        },
-        body: JSON.stringify({
-          action: 'updateCase',
-          payload
-        })
-      });
+/****************************************************
+ * postUpdateCase ここから
+ * updateCase 用POST
+ ****************************************************/
+async function postUpdateCase(payload) {
+  const apiUrl = getOrderCaseApiUrlForPost_();
 
-      const text = await res.text();
+  const res = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify({
+      action: 'updateCase',
+      payload: payload
+    })
+  });
 
-      try {
-        return JSON.parse(text);
-      } catch (error) {
-        throw new Error('APIの返答がJSONではありません: ' + text.slice(0, 120));
-      }
-    }
-    /****************************************************
-     * postUpdateCase ここまで
-     ****************************************************/
+  const text = await res.text();
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw new Error('APIの返答がJSONではありません: ' + text.slice(0, 120));
+  }
+}
+/****************************************************
+ * postUpdateCase ここまで
+ ****************************************************/
+
+
+/****************************************************
+ * getOrderCaseApiUrlForPost_ ここから
+ * config.js の定義方式差を吸収してAPI URLを取得する
+ ****************************************************/
+function getOrderCaseApiUrlForPost_() {
+  if (window.ORDERCASE_API_URL) {
+    return window.ORDERCASE_API_URL;
+  }
+
+  if (typeof ORDERCASE_API_URL !== 'undefined' && ORDERCASE_API_URL) {
+    return ORDERCASE_API_URL;
+  }
+
+  if (window.ORDERCASE_API_BASE_URL) {
+    return window.ORDERCASE_API_BASE_URL;
+  }
+
+  if (typeof ORDERCASE_API_BASE_URL !== 'undefined' && ORDERCASE_API_BASE_URL) {
+    return ORDERCASE_API_BASE_URL;
+  }
+
+  throw new Error('API URLが未設定です。config.js を確認してください。');
+}
+/****************************************************
+ * getOrderCaseApiUrlForPost_ ここまで
+ ****************************************************/
 
 
     /****************************************************
